@@ -11,128 +11,137 @@
 #define KEY_RIGHT 77
 #define KEY_LEFT 75
 
-void gerar(int *lista); //Crio a função gerar
+void gerar(int *lista);
 void print(int matriz[3][3]);
-void loc(int matriz[3][3], int *i, int *j);
 void sucessora(int movimento, int *i, int *j, int matriz[3][3]);
 int avalia(int m_comparar[3][3]);
 
 int main(){
+    int jogar = 1;
+    char resp;
+    while(jogar == 1){
 
-    setlocale(LC_ALL,"portuguese");
+        setlocale(LC_ALL,"portuguese");
 
-    int tela[9], pos1 = 0, pos2 = 0, tecla; //Crio a variável do array (pode ser global se quiserem)
-    char tela2[9];
-    gerar(tela); //Com a função, transformo o array criado em uma tela resolvível
-    int retorno = 0;
-    int m[3][3], pos = 0;
+        int tela[9], pos1 = 0, pos2 = 0, tecla;
+        char tela2[9];
+        gerar(tela);
+        int retorno = 0;
+        int m[3][3], pos = 0;
 
-    for(int i = 0; i < 3; i++){
-        for(int j = 0; j < 3; j++){
-            m[i][j] = tela[pos];
-            pos++;
+        for(int i = 0; i < 3; i++){
+            for(int j = 0; j < 3; j++){
+                m[i][j] = tela[pos];
+                pos++;
+                }
             }
-        }
 
-        system("color 9F");
-        printf("\n\n\n\n\n");
-        printf("\t\t\t  **********************************\n");
-        printf("\t\t\t  *          8-PUZZLE GAME         *\n");
-        printf("\t\t\t  **********************************\n");
-        printf("\n");
-
-        printf("\n");
-        printf("\t\tO objetivo do 8-Puzzle é organizar os números de 1 a 8\n");
-        printf("\t\tem ordem crescente, com o espaço vazio no último lugar.\n");
-        printf("\t\tVocê pode mover o espaço vazio aos blocos adjacentes.\n");
-        printf("\n");
-        //sleep(5);
-        system("cls");
-
-    while(retorno
-
-    != 1){ //O while dura enquanto o jogo terminar (falta a função objetivo)
-
-
-        printf("\n\n\n\n\n");
-        print(m);
-        printf("\n\n\n\n");
-        loc(m, &pos1, &pos2);
-        printf("\t\t  i = %d | j = %d", pos1 + 1, pos2 + 1);
-        tecla = getch();
-
-        if(tecla == 224){
-            tecla = getch();
-            // switch redundante
-            switch(tecla){
-            case 72:
-                tecla = KEY_UP;
-                break;
-            case 80:
-                tecla = KEY_DOWN;
-                break;
-            case 75:
-                tecla = KEY_LEFT;
-                break;
-            case 77:
-                tecla = KEY_RIGHT;
-                break;
-            }
-        }else if(tecla == 27){
-            printf("esc");
-            break;
-        }
-
-
-        sucessora(tecla, &pos1, &pos2, m);
-        retorno = avalia(m);
-        system("cls");
-    }
-    printf("Parabéns você conseguiu encontrar a solução!!");
-
-    return 0;
-}
-
-void gerar(int *lista){ //Defino a variável gerar
-
-    int valor = 0; //Crio a variável valor já no começo, pois ela será o valor lógico do While
-    srand(time(NULL)); // Inicializa o gerador de números aleatórios (Utilizando o fator random do relógio do computador)
-    while (valor != 1){
-
-        // GERAR LISTA:
-        int i, j, temp; // Definição de variáveis
-        // Inicializa a lista com valores aleatórios:
-        for (i = 0; i < 9; i++) {
-            lista[i] = i; // inicializa a lista com valores de 0 a 9
-        }
-        // Embaralha a lista utilizando um algoritmo de Fisher-Yates
-        for (i = 8; i > 0; i--) {
-            j = rand() % (i + 1); // gera um índice aleatório
-            temp = lista[i];
-            lista[i] = lista[j];
-            lista[j] = temp; // troca os valores
-        }
-
-
-        //CALCULAR INVERSÕES:
-
-        int inv = 0; //Defino a variável que contará o número de inversões
-        for(int i = 0; i < 8; i++)
-        {
-            for(int j = i + 1; j < 9; j++ ) //Crio um for dentro de outro para verificar todas as combinações de dois valores do array
-            {
-                if(lista[i] > lista[j] && lista[i] != 0 && lista[j] != 0) //Se houverem inversões de posição (Um valor maior que o outro na lista) e diferente de 0 (Zero é o vazio):
-                {
-                    inv++; //Adiciono +1 na contagem de reversões
+        for(int x = 0; x < 3; x++){
+            for(int y = 0; y < 3; y++){
+                if(m[x][y] == 0){
+                    pos1 = x;
+                    pos2 = y;
                 }
             }
         }
 
-        //VALIDAR
-        for(int i = 0; i < 9; i++){ //Crio um for para ler a lista
-            if(lista[i] == 0){ //Acho o vazio
+            system("color 9F");
+            printf("\n\n\n\n\n");
+            printf("\t\t\t  **********************************\n");
+            printf("\t\t\t  *          8-PUZZLE GAME         *\n");
+            printf("\t\t\t  **********************************\n");
+            printf("\n");
+
+            printf("\n");
+            printf("\t\tO objetivo do 8-Puzzle é organizar os números de 1 a 8\n");
+            printf("\t\tem ordem crescente, com o espaço vazio no último lugar.\n");
+            printf("\t\tVocê pode mover o espaço vazio aos blocos adjacentes.\n");
+            printf("\n");
+            //sleep(5);
+            system("cls");
+
+        while(retorno!= 1){
+
+
+            printf("\n\n\n\n\n");
+            print(m);
+            printf("\n\n\n\n");
+            printf("\t\t  i = %d | j = %d", pos1 + 1, pos2 + 1);
+            tecla = getch();
+
+            if(tecla == 224){
+                tecla = getch();
+                // switch redundante
+                switch(tecla){
+                case 72:
+                    tecla = KEY_UP;
+                    break;
+                case 80:
+                    tecla = KEY_DOWN;
+                    break;
+                case 75:
+                    tecla = KEY_LEFT;
+                    break;
+                case 77:
+                    tecla = KEY_RIGHT;
+                    break;
+                }
+            }else if(tecla == 27){
+                printf("esc");
+                break;
+            }
+
+
+            sucessora(tecla, &pos1, &pos2, m);
+            retorno = avalia(m);
+            system("cls");
+        }
+        printf("Parabéns você conseguiu encontrar a solução!!");
+        system("cls");
+        printf("Deseja jogar novamente? <S/N> ");
+        fflush(stdin);
+        resp = getchar();
+        if(toupper(resp) == 'N'){
+            jogar = 0;
+        }
+    }
+    return 0;
+}
+
+void gerar(int *lista){
+
+    int valor = 0;
+    srand(time(NULL));
+    while (valor != 1){
+
+        int i, j, temp;
+        for (i = 0; i < 9; i++) {
+            lista[i] = i;
+        }
+        for (i = 8; i > 0; i--) {
+            j = rand() % (i + 1);
+            temp = lista[i];
+            lista[i] = lista[j];
+            lista[j] = temp;
+        }
+
+        int inv = 0;
+        for(int i = 0; i < 8; i++)
+        {
+            for(int j = i + 1; j < 9; j++ )
+            {
+                if(lista[i] > lista[j] && lista[i] != 0 && lista[j] != 0) //Se houverem inversões de posição (Um valor maior que o outro na lista) e diferente de 0 (Zero é o vazio):
+                {
+                    inv++;
+                }
+            }
+        }
+
+
+        for(int i = 0; i < 9; i++){
+            if(lista[i] == 0){
                 if((i+1) % 2 == 0 && inv % 2 == 0){ //Verifico se a posição inicial do vazio é par e se o número de inversões também é
-                    valor = 1; //Caso seja, a tela gerada é válida
+                    valor = 1;
                 }
             }
 
@@ -155,18 +164,6 @@ void print(int matriz[3][3]){
         }
     }
     return;
-}
-
-void loc(int matriz[3][3], int *i, int *j){
-    for(int x = 0; x < 3; x++){
-        for(int y = 0; y < 3; y++){
-            if(matriz[x][y] == 0){
-                *i = x;
-                *j = y;
-            }
-        }
-    }
-
 }
 
 void sucessora(int movimento, int *i, int *j, int matriz[3][3]){// adicionar matriz como parametro e cópia
