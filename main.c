@@ -63,6 +63,11 @@ int pilhaVazia(Pilha* p) {
     return p->topo == NULL;
 }
 
+int movimentoValido(int i, int j) {
+    return i >= 0 && i < 3 && j >= 0 && j < 3;
+}
+
+
 //FUNÇÃO DFS
 int profIterativa(Estado estado);
 
@@ -133,6 +138,54 @@ int main(){
             }
             else if(escolhaIA ==2){
                 //DFS iterativa
+                Pilha pilha;
+                Estado inicial = {
+                    .tabuleiro = m,
+                    .profundidade = 0,
+                    .pos_vazio_i = 1,
+                    .pos_vazio_j = 1
+                };
+                for(int limite = 0; limite < PROFUNDIDADE; limite++) {
+                Pilha pilha;
+                inicializarPilha(&pilha);
+                empilhar(&pilha, inicial);
+                int movimentos[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+                while(!pilhaVazia(&pilha)) {
+                    Estado atual = desempilhar(&pilha);
+
+                    if(avalia(&atual)) {
+                        printf("Solução encontrada na profundidade %d\n", atual.profundidade);
+                        return 1;
+                    }
+
+                    if(atual.profundidade < limite) {
+                        for(int m = 0; m < 4; m++) {
+                            int novo_i = atual.pos_vazio_i + movimentos[m][0];
+                            int novo_j = atual.pos_vazio_j + movimentos[m][1];
+
+                            if(movimentoValido(novo_i, novo_j)) {
+                                Estado novo = atual;
+                                novo.profundidade++;
+
+                        // Realizar movimento
+                                novo.tabuleiro[atual.pos_vazio_i][atual.pos_vazio_j] =
+                                    atual.tabuleiro[novo_i][novo_j];
+                                novo.tabuleiro[novo_i][novo_j] = 0;
+                                novo.pos_vazio_i = novo_i;
+                                novo.pos_vazio_j = novo_j;
+
+                                empilhar(&pilha, novo);
+                                printf("\n\n\n\n\n");
+                                print(inicial.tabuleiro);
+                                printf("\n\n\n\n");
+                                printf("\t\t  i = %d | j = %d", pos1 + 1, pos2 + 1)
+                                system("cls");
+                            }
+                        }
+                    }
+                }
+                }
             }
         }
         printf("\n\nParabéns você conseguiu encontrar a solução!!\n\n\n\n\n\n\n\n\n");
@@ -308,5 +361,22 @@ void menu_IA(int *escolha){
 }
 
 int profIterativa(Estado estado){
+    for(int limite = 0; limite < PROFUNDIDADE; limite++){
+        Pilha pilha;
+        inicializarPilha(&pilha);
+        empilhar(&pilha, estado);
 
+        while(!pilhaVazia(&pilha)) {
+            Estado atual = desempilhar(&pilha);
+
+            if(avalia(&atual)){
+                printf("Solução encontrada na profundidade %d\n", atual.profundidade);
+                return 1;
+            }
+
+            if(atual.profundidade < limite){
+
+            }
+        }
+    }
 }
