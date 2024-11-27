@@ -5,6 +5,7 @@
 #include <time.h>
 #include <conio.h>
 #include <windows.h>
+#include <ctype.h>
 
 #define KEY_UP 72
 #define KEY_DOWN 80
@@ -15,6 +16,8 @@ void gerar(int *lista);
 void print(int matriz[3][3]);
 void sucessora(int movimento, int *i, int *j, int matriz[3][3]);
 int avalia(int m_comparar[3][3]);
+void menu_inicial(int *escolha);
+void menu_IA(int *escolha);
 
 int main(){
     int jogar = 1;
@@ -26,7 +29,7 @@ int main(){
         int tela[9], pos1 = 0, pos2 = 0, tecla;
         char tela2[9];
         gerar(tela);
-        int retorno = 0;
+        int retorno = 0, escolha, escolhaIA;
         int m[3][3], pos = 0;
 
         for(int i = 0; i < 3; i++){
@@ -45,58 +48,46 @@ int main(){
             }
         }
 
-            system("color 9F");
-            printf("\n\n\n\n\n");
-            printf("\t\t\t  **********************************\n");
-            printf("\t\t\t  *          8-PUZZLE GAME         *\n");
-            printf("\t\t\t  **********************************\n");
-            printf("\n");
+        system("color 9F");
+        printf("\n\n\n\n\n");
+        printf("\t\t\t  **********************************\n");
+        printf("\t\t\t  *          8-PUZZLE GAME         *\n");
+        printf("\t\t\t  **********************************\n");
+        printf("\n");
 
-            printf("\n");
-            printf("\t\tO objetivo do 8-Puzzle é organizar os números de 1 a 8\n");
-            printf("\t\tem ordem crescente, com o espaço vazio no último lugar.\n");
-            printf("\t\tVocê pode mover o espaço vazio aos blocos adjacentes.\n");
-            printf("\n");
-            //sleep(5);
-            system("cls");
+        printf("\n");
+        printf("\t\tO objetivo do 8-Puzzle ï¿½ organizar os nï¿½meros de 1 a 8\n");
+        printf("\t\tem ordem crescente, com o espaï¿½o vazio no ï¿½ltimo lugar.\n");
+        printf("\t\tVocï¿½ pode mover o espaï¿½o vazio aos blocos adjacentes.\n\n\n\n\n\n\n\n\n\n\n");
+        printf("\n");
+        system("pause");
+        system("cls");
 
-        while(retorno!= 1){
-
-
-            printf("\n\n\n\n\n");
-            print(m);
-            printf("\n\n\n\n");
-            printf("\t\t  i = %d | j = %d", pos1 + 1, pos2 + 1);
-            tecla = getch();
-
-            if(tecla == 224){
+        menu_inicial(&escolha);
+        if(escolha == 1){
+            while(retorno!= 1){
+                printf("\n\n\n\n\n");
+                print(m);
+                printf("\n\n\n\n");
+                printf("\t\t  i = %d | j = %d", pos1 + 1, pos2 + 1);
                 tecla = getch();
-                // switch redundante
-                switch(tecla){
-                case 72:
-                    tecla = KEY_UP;
-                    break;
-                case 80:
-                    tecla = KEY_DOWN;
-                    break;
-                case 75:
-                    tecla = KEY_LEFT;
-                    break;
-                case 77:
-                    tecla = KEY_RIGHT;
-                    break;
-                }
-            }else if(tecla == 27){
-                printf("esc");
-                break;
+                sucessora(tecla, &pos1, &pos2, m);
+                retorno = avalia(m);
+                system("cls");
             }
-
-
-            sucessora(tecla, &pos1, &pos2, m);
-            retorno = avalia(m);
-            system("cls");
+        }else{
+            if(escolha == 2){
+                menu_IA(&escolhaIA);
+            }
+            if(escolhaIA == 1){
+                //A*
+            }
+            else if(escolhaIA ==2){
+                //DFS iterativa
+            }
         }
-        printf("Parabéns você conseguiu encontrar a solução!!");
+        printf("\n\nParabï¿½ns vocï¿½ conseguiu encontrar a soluï¿½ï¿½o!!\n\n\n\n\n\n\n\n\n");
+        system("pause");
         system("cls");
         printf("Deseja jogar novamente? <S/N> ");
         fflush(stdin);
@@ -130,7 +121,7 @@ void gerar(int *lista){
         {
             for(int j = i + 1; j < 9; j++ )
             {
-                if(lista[i] > lista[j] && lista[i] != 0 && lista[j] != 0) //Se houverem inversões de posição (Um valor maior que o outro na lista) e diferente de 0 (Zero é o vazio):
+                if(lista[i] > lista[j] && lista[i] != 0 && lista[j] != 0) //Se houverem inversï¿½es de posiï¿½ï¿½o (Um valor maior que o outro na lista) e diferente de 0 (Zero ï¿½ o vazio):
                 {
                     inv++;
                 }
@@ -140,7 +131,7 @@ void gerar(int *lista){
 
         for(int i = 0; i < 9; i++){
             if(lista[i] == 0){
-                if((i+1) % 2 == 0 && inv % 2 == 0){ //Verifico se a posição inicial do vazio é par e se o número de inversões também é
+                if((i+1) % 2 == 0 && inv % 2 == 0){ //Verifico se a posiï¿½ï¿½o inicial do vazio ï¿½ par e se o nï¿½mero de inversï¿½es tambï¿½m ï¿½
                     valor = 1;
                 }
             }
@@ -166,12 +157,12 @@ void print(int matriz[3][3]){
     return;
 }
 
-void sucessora(int movimento, int *i, int *j, int matriz[3][3]){// adicionar matriz como parametro e cópia
+void sucessora(int movimento, int *i, int *j, int matriz[3][3]){// adicionar matriz como parametro e cï¿½pia
     int aux_valor, aux_i, aux_j;
-    aux_i = *i; //guardando a posição inicial do vazio
+    aux_i = *i; //guardando a posiï¿½ï¿½o inicial do vazio
     aux_j = *j;
 
-    if (movimento == KEY_UP && (*i) > 0) { //fazendo a verificação e alterando a posição
+    if (movimento == KEY_UP && (*i) > 0) { //fazendo a verificaï¿½ï¿½o e alterando a posiï¿½ï¿½o
         (*i)--;
     }
     else if (movimento == KEY_DOWN && (*i) < 2) {
@@ -184,16 +175,16 @@ void sucessora(int movimento, int *i, int *j, int matriz[3][3]){// adicionar mat
         (*j)--;
     }
     else {
-        return; // se não for válido
+        return; // se nï¿½o for vï¿½lido
     }
 
     aux_valor = matriz[*i][*j]; //guardando o valor que o vazio vai ocupar futuramente
-    matriz[*i][*j] = 0; //definindo a nova posição como vazio
-    matriz[aux_i][aux_j] = aux_valor; //definindo a posição antiga do vazio com o novo valor
+    matriz[*i][*j] = 0; //definindo a nova posiï¿½ï¿½o como vazio
+    matriz[aux_i][aux_j] = aux_valor; //definindo a posiï¿½ï¿½o antiga do vazio com o novo valor
 }
 
 int avalia(int m_comparar[3][3]){
-    int v_procurado[3][3] = {{1,2,3},{4,5,6},{7,8,0}}, sum = 0; // usar soma pra verificar quantos numeros estão em uma posição correta
+    int v_procurado[3][3] = {{1,2,3},{4,5,6},{7,8,0}}, sum = 0; // usar soma pra verificar quantos numeros estï¿½o em uma posiï¿½ï¿½o correta
 
     for(int i=0; i<3; i++){
         for(int j=0; j<3; j++){
@@ -203,8 +194,66 @@ int avalia(int m_comparar[3][3]){
         }
     }
     if (sum == 9){
-            return 1; // caso a soma seja 9, todos os valores estão na posição correta, a solução foi encontrada
+            return 1; // caso a soma seja 9, todos os valores estï¿½o na posiï¿½ï¿½o correta, a soluï¿½ï¿½o foi encontrada
     } else {
-        return 0; // caso o vetor atual nao seja igual ao objetivo, ele retorna 0, ou seja, a solução não foi encontrada
+        return 0; // caso o vetor atual nao seja igual ao objetivo, ele retorna 0, ou seja, a soluï¿½ï¿½o nï¿½o foi encontrada
+    }
+}
+
+void menu_inicial(int *escolha){
+    int tecla = 0;
+    *escolha = 1;
+
+    while (1) {
+        system("cls");
+
+        printf("\n\n\n\t\t\t   *******************     8 Puzzle   ********************\n");
+        printf("\t\t\t   *                  | Selecione um Opï¿½ï¿½o |                  *\n");
+        printf("\t\t\t   *                                                          *\n");
+        printf("\t\t\t   * %s 8 Puzzle Manual                                       *\n", (*escolha == 1) ? "->" : "  ");
+        printf("\t\t\t   * %s 8 Puzzle com Inteligï¿½ncia Artificial                  *\n", (*escolha == 2) ? "->" : "  ");
+        printf("\t\t\t   *                                                          *\n");
+        printf("\t\t\t   ************************************************************\n");
+
+        tecla = getch();
+
+        //NAVEGAï¿½ï¿½O
+        if (tecla == KEY_UP) {
+            if (*escolha > 1) (*escolha)--;
+        } else if (tecla == KEY_DOWN) {
+            if (*escolha < 2) (*escolha)++;
+        } else if (tecla == 27 || tecla == 13) {
+            system("cls");
+            return;
+        }
+    }
+}
+
+void menu_IA(int *escolha){
+    int tecla = 0;
+    *escolha = 1;
+
+    while (1) {
+        system("cls");
+
+        printf("\n\n\n\t\t\t   *******************     8 Puzzle   ********************\n");
+        printf("\t\t\t   *                  | Selecione a busca |                   *\n");
+        printf("\t\t\t   *                                                          *\n");
+        printf("\t\t\t   * %s Algoritmo de A*                                       *\n", (*escolha == 1) ? "->" : "  ");
+        printf("\t\t\t   * %s Algoritmo de Busca em Profundidade Iterativa          *\n", (*escolha == 2) ? "->" : "  ");
+        printf("\t\t\t   *                                                          *\n");
+        printf("\t\t\t   ************************************************************\n");
+
+        tecla = getch();
+
+        //NAVEGAï¿½ï¿½O
+        if (tecla == KEY_UP) {
+            if (*escolha > 1) (*escolha)--;
+        } else if (tecla == KEY_DOWN) {
+            if (*escolha < 2) (*escolha)++;
+        } else if (tecla == 27 || tecla == 13) {
+            system("cls");
+            return;
+        }
     }
 }
