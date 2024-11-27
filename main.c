@@ -63,13 +63,13 @@ int pilhaVazia(Pilha* p) {
     return p->topo == NULL;
 }
 
-int movimentoValido(int i, int j) {
-    return i >= 0 && i < 3 && j >= 0 && j < 3;
-}
+//int movimentoValido(int i, int j) {
+//    return i >= 0 && i < 3 && j >= 0 && j < 3;
+//}
 
 
 //FUNÇÃO DFS
-int profIterativa(Estado estado);
+//int profIterativa(Estado estado);
 
 
 int main(){
@@ -139,49 +139,51 @@ int main(){
             else if(escolhaIA ==2){
                 //DFS iterativa
                 Pilha pilha;
+                inicializarPilha(&pilha);
                 Estado inicial = {
-                    .tabuleiro = m,
-                    .profundidade = 0,
-                    .pos_vazio_i = 1,
-                    .pos_vazio_j = 1
+                .tabuleiro = {{m[0][0], m[0][1], m[0][2]},
+                            {m[1][0], m[1][1], m[1][2]},
+                            {m[2][0], m[2][1], m[2][2]}},
+                .profundidade = 0,
+                .pos_vazio_i = pos1,
+                .pos_vazio_j = pos2
                 };
                 for(int limite = 0; limite < PROFUNDIDADE; limite++) {
-                Pilha pilha;
-                inicializarPilha(&pilha);
                 empilhar(&pilha, inicial);
-                int movimentos[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
+//                int movimentos[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
                 while(!pilhaVazia(&pilha)) {
                     Estado atual = desempilhar(&pilha);
 
-                    if(avalia(&atual)) {
+                    if (avalia(atual.tabuleiro)) {
                         printf("Solução encontrada na profundidade %d\n", atual.profundidade);
-                        return 1;
+                        print(atual.tabuleiro);
+                        system("pause");
                     }
 
-                    if(atual.profundidade < limite) {
+                    if(atual.profundidade < PROFUNDIDADE) {
                         for(int m = 0; m < 4; m++) {
-                            int novo_i = atual.pos_vazio_i + movimentos[m][0];
-                            int novo_j = atual.pos_vazio_j + movimentos[m][1];
+                            int novo_i = atual.pos_vazio_i;
+                            int novo_j = atual.pos_vazio_j;
+                            sucessora(m, &novo_i, &novo_j, inicial.tabuleiro);
 
-                            if(movimentoValido(novo_i, novo_j)) {
-                                Estado novo = atual;
-                                novo.profundidade++;
+//                            if(movimentoValido(novo_i, novo_j)) {
+                            Estado novo = atual;
+                            novo.profundidade++;
 
                         // Realizar movimento
-                                novo.tabuleiro[atual.pos_vazio_i][atual.pos_vazio_j] =
-                                    atual.tabuleiro[novo_i][novo_j];
-                                novo.tabuleiro[novo_i][novo_j] = 0;
-                                novo.pos_vazio_i = novo_i;
-                                novo.pos_vazio_j = novo_j;
+                            novo.tabuleiro[atual.pos_vazio_i][atual.pos_vazio_j] = atual.tabuleiro[novo_i][novo_j];
+                            novo.tabuleiro[novo_i][novo_j] = 0;
+                            novo.pos_vazio_i = novo_i;
+                            novo.pos_vazio_j = novo_j;
 
-                                empilhar(&pilha, novo);
-                                printf("\n\n\n\n\n");
-                                print(inicial.tabuleiro);
-                                printf("\n\n\n\n");
-                                printf("\t\t  i = %d | j = %d", pos1 + 1, pos2 + 1)
-                                system("cls");
-                            }
+                            empilhar(&pilha, novo);
+                            printf("\n\n\n\n\n");
+                            print(novo.tabuleiro);
+                            printf("\n\n\n\n");
+                            printf("\t\t  i = %d | j = %d\n\n\n\n\n\n", novo.pos_vazio_i + 1, novo.pos_vazio_j + 1);
+                            system("pause");
+                            system("cls");
+//                            }
                         }
                     }
                 }
@@ -267,7 +269,7 @@ void sucessora(int movimento, int *i, int *j, int matriz[3][3]){// adicionar mat
     if (movimento == KEY_UP && (*i) > 0) { //fazendo a verificação e alterando a posição
         (*i)--;
     }
-    else if (movimento == KEY_DOWN && (*i) < 2) {
+    else if (movimento == KEY_DOWN  && (*i) < 2) {
         (*i)++;
     }
     else if (movimento == KEY_RIGHT && (*j) < 2) {
@@ -360,7 +362,7 @@ void menu_IA(int *escolha){
     }
 }
 
-int profIterativa(Estado estado){
+/*int profIterativa(Estado estado){
     for(int limite = 0; limite < PROFUNDIDADE; limite++){
         Pilha pilha;
         inicializarPilha(&pilha);
@@ -379,4 +381,5 @@ int profIterativa(Estado estado){
             }
         }
     }
-}
+} */
+
