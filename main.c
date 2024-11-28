@@ -25,11 +25,12 @@ typedef struct node{
 void gerar(int *lista);
 void print(int matriz[3][3]);
 void sucessora(int movimento, int *i, int *j, int matriz[3][3]);
-void sucessora(Node *current, int i_moves, int *newX, int *newY);
+void sucessoraIa(Node *current, int i_moves,int *zeroX, int *zeroY, int *newX, int *newY);
 int avalia(int m_comparar[3][3]);
 int heuristica(int atual[3][3]);
 Node *criaNo(int puzzle[3][3], int g, int h, Node *parent);
 int visitado(Node* atual, int puzzle[3][3]);
+void imprimePilha (Pilha* p);
 
 int main(){
     int jogar = 1;
@@ -112,6 +113,13 @@ int main(){
     }
     return 0;
 }
+
+void imprimePilha (Pilha* p){
+    No* q;
+    for (q=p->Topo; q!=NULL; q=q->prox){
+        print(q->puzzle);
+    }
+};
 
 void gerar(int *lista){
 
@@ -197,26 +205,23 @@ void sucessora(int movimento, int *i, int *j, int matriz[3][3]){// adicionar mat
     matriz[aux_i][aux_j] = aux_valor; //definindo a posi��o antiga do vazio com o novo valor
 }
 
-void sucessoraIa(Node *current, int i_moves, int *newX, int *newY){
+void sucessoraIa(Node *current, int i_moves,int *zeroX, int *zeroY, int *newX, int *newY){
 
-        int zeroX, zeroY;
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
                 if (current->puzzle[i][j] == 0) {
-                    zeroX = i;
-                    zeroY = j;
+                    *zeroX = i;
+                    *zeroY = j;
                 }
             }
         }
 
          int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Movimentos possíveis (cima, baixo, esquerda, direita)
             if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) {
-                *newX = zeroX + moves[i_moves][0];
-                *newY = zeroY + moves[i_moves][1];
+                *newX = *zeroX + moves[i_moves][0];
+                *newY = *zeroY + moves[i_moves][1];
             }
 }
-
-
 
 int avalia(int m_comparar[3][3]){
     int v_procurado[3][3] = {{1,2,3},{4,5,6},{7,8,0}}, sum = 0; // usar soma pra verificar quantos numeros est�o em uma posi��o correta
@@ -333,6 +338,7 @@ int visitado(Node* atual, int puzzle[3][3]) {
     return 0;
 }
 
+
 void aStar(int start[3][3]) {
     int m_objetivo[3][3] = {{1,2,3},{4,5,6},{7,8,0}};
 
@@ -341,6 +347,7 @@ void aStar(int start[3][3]) {
 
     Node* inicioNo = criaNo(start, 0, heuristica(start), NULL);
     openList[openCount++] = inicioNo;
+    int *zeroX, *zeroY, *newX, *newY, newPuzzle[3][3];
 
     while (openCount > 0) {
         // Encontrar o nó com menor f na openList
@@ -351,15 +358,20 @@ void aStar(int start[3][3]) {
             }
         }
 
-        Node* atual = openList[minIndex];
+        Node *atual = openList[minIndex];
 
         // Verificar se o objetivo foi alcançado
         if (avalia(atual->puzzle)) {
+            Pilha *p = CriaPilha;
             printf("Solução encontrada!\n");
+
             while (atual != NULL) {
-                print(atual->puzzle);
+                push(p, atual->puzzle);
                 atual = atual->parent;
             }
+            imprimePilha(p);
+
+            libera(p);
             return;
         }
 
@@ -368,12 +380,11 @@ void aStar(int start[3][3]) {
             openList[i] = openList[i + 1];
         }
         openCount--;
-
-        int *newX, *newY;
+        memcpy(atual->puzzle, newPuzzle, sizeof(newPuzzle));
         for (int i = 0; i < 4; i++) {
-                sucessoraIa()
-                newPuzzle[zeroX][zeroY] = newPuzzle[newX][newY];
-                newPuzzle[newX][newY] = 0;
+                sucessoraIa(atual, i, zeroX, zeroY, newX, newY);
+                newPuzzle[*zeroX][*zeroY] = newPuzzle[*newX][*newY];
+                newPuzzle[*newX][*newY] = 0;
 
                 if (visitado(atual, newPuzzle) != 1) {
                     Node* successor = criaNo(newPuzzle, atual->g + 1, heuristica(newPuzzle), atual);
@@ -381,7 +392,7 @@ void aStar(int start[3][3]) {
                 }
             }
         }
+       printf("Nenhuma solução encontrada.\n");
     }
 
-    printf("Nenhuma solução encontrada.\n");
-}
+
