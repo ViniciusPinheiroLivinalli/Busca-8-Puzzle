@@ -7,27 +7,28 @@
 #include <windows.h>
 #include <ctype.h>
 
+#include "pilhaA.h"
+
 #define KEY_UP 72
 #define KEY_DOWN 80
 #define KEY_RIGHT 77
 #define KEY_LEFT 75
 
-typedef struct {
+typedef struct node{
     int puzzle[3][3]; //estado
     int g; // Custo do caminho até agora
     int h; // Valor da heurística
     int f; // Custo total (f = g + h)
-    struct No* parent; // Ponteiro para o estado pai
-} No;
-
+    struct node *parent; // Ponteiro para o estado pai
+} Node;
 
 void gerar(int *lista);
 void print(int matriz[3][3]);
 void sucessora(int movimento, int *i, int *j, int matriz[3][3]);
 int avalia(int m_comparar[3][3]);
 int heuristica(int atual[3][3]);
-No* criaNo(int puzzle[3][3], int g, int h, No* parent);
-int visitado(No* atual, int puzzle[3][3]);
+Node *criaNo(int puzzle[3][3], int g, int h, Node *parent);
+int visitado(Node* atual, int puzzle[3][3]);
 
 int main(){
     int jogar = 1;
@@ -195,6 +196,7 @@ void sucessora(int movimento, int *i, int *j, int matriz[3][3]){// adicionar mat
     matriz[aux_i][aux_j] = aux_valor; //definindo a posi��o antiga do vazio com o novo valor
 }
 
+
 int avalia(int m_comparar[3][3]){
     int v_procurado[3][3] = {{1,2,3},{4,5,6},{7,8,0}}, sum = 0; // usar soma pra verificar quantos numeros est�o em uma posi��o correta
 
@@ -290,8 +292,8 @@ int heuristica(int atual[3][3]){
     return distancia;
 }
 
-No* criaNo(int puzzle[3][3], int g, int h, No* parent) {
-    No* novoNo = (No*)malloc(sizeof(No));
+Node* criaNo(int puzzle[3][3], int g, int h, Node* parent) {
+    Node* novoNo = (Node*)malloc(sizeof(Node));
     memcpy(novoNo->puzzle, puzzle, sizeof(novoNo->puzzle));
     novoNo->g = g;
     novoNo->h = h;
@@ -300,7 +302,7 @@ No* criaNo(int puzzle[3][3], int g, int h, No* parent) {
     return novoNo;
 }
 
-int visitado(No* atual, int puzzle[3][3]) {
+int visitado(Node* atual, int puzzle[3][3]) {
     while (atual != NULL) {
         if (memcmp(atual->puzzle, puzzle, sizeof(atual->puzzle)) == 0) {
             return 1;
@@ -313,10 +315,10 @@ int visitado(No* atual, int puzzle[3][3]) {
 void aStar(int start[3][3]) {
     int m_objetivo[3][3] = {{1,2,3},{4,5,6},{7,8,0}};
 
-    No* openList[1000]; // Lista de nós a serem explorados
+    Node* openList[1000]; // Lista de nós a serem explorados
     int openCount = 0;
 
-    No* inicioNo = criaNo(start, 0, heuristica(start), NULL);
+    Node* inicioNo = criaNo(start, 0, heuristica(start), NULL);
     openList[openCount++] = inicioNo;
 
     while (openCount > 0) {
@@ -328,7 +330,7 @@ void aStar(int start[3][3]) {
             }
         }
 
-        No* atual = openList[minIndex];
+        Node* atual = openList[minIndex];
 
         // Verificar se o objetivo foi alcançado
         if (avalia(atual->puzzle)) {
@@ -370,7 +372,7 @@ void aStar(int start[3][3]) {
                 newPuzzle[newX][newY] = 0;
 
                 if (visitado(atual, newPuzzle) != 1) {
-                    No* successor = criaNo(newPuzzle, atual->g + 1, heuristica(newPuzzle), atual);
+                    Node* successor = criaNo(newPuzzle, atual->g + 1, heuristica(newPuzzle), atual);
                     openList[openCount++] = successor;
                 }
             }
@@ -379,4 +381,3 @@ void aStar(int start[3][3]) {
 
     printf("Nenhuma solução encontrada.\n");
 }
-

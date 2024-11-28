@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
@@ -23,6 +24,7 @@ typedef struct {
 void gerar(int *lista);
 void print(int matriz[3][3]);
 void sucessora(int movimento, int *i, int *j, int matriz[3][3]);
+void sucessoraAstar(No *current, int i_moves, int *newPuzzle[3][3]);
 int avalia(int m_comparar[3][3]);
 int heuristica(int atual[3][3]);
 No* criaNo(int puzzle[3][3], int g, int h, No* parent);
@@ -205,6 +207,33 @@ void sucessora(int movimento, int *i, int *j, int matriz[3][3]){// adicionar mat
     matriz[aux_i][aux_j] = aux_valor; //definindo a posição antiga do vazio com o novo valor
 }
 
+void sucessoraAstar(No *current, int i_moves, int *newPuzzle[3][3]){
+
+        int zeroX, zeroY;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (current->puzzle[i][j] == 0) {
+                    zeroX = i;
+                    zeroY = j;
+                }
+            }
+        }
+
+         int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Movimentos possíveis (cima, baixo, esquerda, direita)
+
+            int newX = zeroX + moves[i_moves][0];
+            int newY = zeroY + moves[i_moves][1];
+
+            if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) {
+                memcpy(newPuzzle, current->puzzle, sizeof(newPuzzle));
+                // Trocar o espaço vazio com a posição adjacente
+                *newPuzzle[zeroX][zeroY] = *newPuzzle[newX][newY];
+                *newPuzzle[newX][newY] = 0;
+
+            }
+}
+
+
 int avalia(int m_comparar[3][3]){
     int v_procurado[3][3] = {{1,2,3},{4,5,6},{7,8,0}}, sum = 0; // usar soma pra verificar quantos numeros estão em uma posição correta
 
@@ -297,39 +326,18 @@ void aStar(int start[3][3]) {
             openList[i] = openList[i + 1];
         }
         openCount--;
-
-        // Gerar os sucessores
-        int zeroX, zeroY;
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (atual->puzzle[i][j] == 0) {
-                    zeroX = i;
-                    zeroY = j;
-                }
-            }
-        }
-
-        int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Movimentos possíveis (cima, baixo, esquerda, direita)
+        int *newPuzzle[3][3];
         for (int i = 0; i < 4; i++) {
-            int newX = zeroX + moves[i][0];
-            int newY = zeroY + moves[i][1];
-
-            if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) {
-                int newPuzzle[3][3];
-                memcpy(newPuzzle, atual->puzzle, sizeof(newPuzzle));
-                // Trocar o espaço vazio com a posição adjacente
-                newPuzzle[zeroX][zeroY] = newPuzzle[newX][newY];
-                newPuzzle[newX][newY] = 0;
-
+                sucessoraAstar(atual, i, newPuzzle);
                 if (visitado(atual, newPuzzle) != 1) {
                     No* successor = criaNo(newPuzzle, atual->g + 1, heuristica(newPuzzle), atual);
                     openList[openCount++] = successor;
                 }
             }
         }
+        printf("Nenhuma solução encontrada.\n");
     }
 
-    printf("Nenhuma solução encontrada.\n");
-}
+
 
 
