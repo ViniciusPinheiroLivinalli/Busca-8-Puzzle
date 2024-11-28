@@ -12,7 +12,7 @@
 #define KEY_RIGHT 77
 #define KEY_LEFT 75
 
-#define PROFUNDIDADE 100
+#define PROFUNDIDADE 5
 
 void gerar(int *lista);
 void print(int matriz[3][3]);
@@ -63,9 +63,9 @@ int pilhaVazia(Pilha* p) {
     return p->topo == NULL;
 }
 
-//int movimentoValido(int i, int j) {
-//    return i >= 0 && i < 3 && j >= 0 && j < 3;
-//}
+int movimentoValido(int i, int j) {
+    return i >= 0 && i < 2 && j >= 0 && j < 2;
+}
 
 
 //FUNÇÃO DFS
@@ -142,51 +142,54 @@ int main(){
                 inicializarPilha(&pilha);
                 Estado inicial = {
                 .tabuleiro = {{m[0][0], m[0][1], m[0][2]},
-                            {m[1][0], m[1][1], m[1][2]},
-                            {m[2][0], m[2][1], m[2][2]}},
+                              {m[1][0], m[1][1], m[1][2]},
+                              {m[2][0], m[2][1], m[2][2]}},
                 .profundidade = 0,
                 .pos_vazio_i = pos1,
                 .pos_vazio_j = pos2
                 };
                 for(int limite = 0; limite < PROFUNDIDADE; limite++) {
-                empilhar(&pilha, inicial);
-//                int movimentos[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-                while(!pilhaVazia(&pilha)) {
-                    Estado atual = desempilhar(&pilha);
+                    empilhar(&pilha, inicial);
+                    int movimentos[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+                    while(!pilhaVazia(&pilha)) {
+                        Estado atual = desempilhar(&pilha);
 
-                    if (avalia(atual.tabuleiro)) {
-                        printf("Solução encontrada na profundidade %d\n", atual.profundidade);
-                        print(atual.tabuleiro);
-                        system("pause");
-                    }
-
-                    if(atual.profundidade < PROFUNDIDADE) {
-                        for(int m = 0; m < 4; m++) {
-                            int novo_i = atual.pos_vazio_i;
-                            int novo_j = atual.pos_vazio_j;
-                            sucessora(m, &novo_i, &novo_j, inicial.tabuleiro);
-
-//                            if(movimentoValido(novo_i, novo_j)) {
-                            Estado novo = atual;
-                            novo.profundidade++;
-
-                        // Realizar movimento
-                            novo.tabuleiro[atual.pos_vazio_i][atual.pos_vazio_j] = atual.tabuleiro[novo_i][novo_j];
-                            novo.tabuleiro[novo_i][novo_j] = 0;
-                            novo.pos_vazio_i = novo_i;
-                            novo.pos_vazio_j = novo_j;
-
-                            empilhar(&pilha, novo);
-                            printf("\n\n\n\n\n");
-                            print(novo.tabuleiro);
-                            printf("\n\n\n\n");
-                            printf("\t\t  i = %d | j = %d\n\n\n\n\n\n", novo.pos_vazio_i + 1, novo.pos_vazio_j + 1);
+                        if (avalia(atual.tabuleiro)) {
+                            printf("Solução encontrada na profundidade %d\n", atual.profundidade);
+                            print(atual.tabuleiro);
                             system("pause");
-                            system("cls");
-//                            }
+                        }
+
+                        if(atual.profundidade < limite) {
+                            for(int m = 0; m < 4; m++) {
+                                int novo_i = atual.pos_vazio_i;
+                                int novo_j = atual.pos_vazio_j;
+
+                                if(movimentoValido(atual.pos_vazio_i + movimentos[m][0], atual.pos_vazio_j + movimentos[m][1])){
+                                    novo_i = novo_i + movimentos[m][0];
+                                    novo_j = novo_j + movimentos[m][1];
+                                    atual.profundidade++;
+                                }
+
+                                Estado novo = atual;
+
+                                // Realizar movimento
+                                novo.tabuleiro[atual.pos_vazio_i][atual.pos_vazio_j] = atual.tabuleiro[novo_i][novo_j];
+                                novo.tabuleiro[novo_i][novo_j] = 0;
+                                novo.pos_vazio_i = novo_i;
+                                novo.pos_vazio_j = novo_j;
+
+                                //Empilha e printa
+                                empilhar(&pilha, novo);
+                                printf("\n\n\n\n\n");
+                                print(novo.tabuleiro);
+                                printf("\n\n\n\n");
+                                printf("\t\t  i = %d | j = %d\n\n\n\n\n\n", novo.pos_vazio_i + 1, novo.pos_vazio_j + 1);
+                                system("pause");
+                                system("cls");
+                            }
                         }
                     }
-                }
                 }
             }
         }
