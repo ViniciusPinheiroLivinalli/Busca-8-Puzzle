@@ -12,12 +12,22 @@
 #define KEY_RIGHT 77
 #define KEY_LEFT 75
 
+typedef struct {
+    int puzzle[3][3]; //estado
+    int g; // Custo do caminho até agora
+    int h; // Valor da heurística
+    int f; // Custo total (f = g + h)
+    struct No* parent; // Ponteiro para o estado pai
+} No;
+
+
 void gerar(int *lista);
 void print(int matriz[3][3]);
 void sucessora(int movimento, int *i, int *j, int matriz[3][3]);
 int avalia(int m_comparar[3][3]);
-void menu_inicial(int *escolha);
-void menu_IA(int *escolha);
+int heuristica(int atual[3][3]);
+No* criaNo(int puzzle[3][3], int g, int h, No* parent);
+int visitado(No* atual, int puzzle[3][3]);
 
 int main(){
     int jogar = 1;
@@ -81,6 +91,8 @@ int main(){
             }
             if(escolhaIA == 1){
                 //A*
+
+                aStar(m);
             }
             else if(escolhaIA ==2){
                 //DFS iterativa
@@ -257,3 +269,114 @@ void menu_IA(int *escolha){
         }
     }
 }
+
+int heuristica(int atual[3][3]){
+    int distancia = 0;
+    int m_objetivo[3][3] = {{1,2,3},{4,5,6},{7,8,0}};
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (atual[i][j] != 0) { // Ignorar o espaço vazio
+                for (int x = 0; x < 3; x++) {
+                    for (int y = 0; y < 3; y++) {
+                        if (atual[i][j] == m_objetivo[x][y]) {
+                            distancia += abs(i - x) + abs(j - y);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return distancia;
+}
+
+No* criaNo(int puzzle[3][3], int g, int h, No* parent) {
+    No* novoNo = (No*)malloc(sizeof(No));
+    memcpy(novoNo->puzzle, puzzle, sizeof(novoNo->puzzle));
+    novoNo->g = g;
+    novoNo->h = h;
+    novoNo->f = g + h;
+    novoNo->parent = parent;
+    return novoNo;
+}
+
+int visitado(No* atual, int puzzle[3][3]) {
+    while (atual != NULL) {
+        if (memcmp(atual->puzzle, puzzle, sizeof(atual->puzzle)) == 0) {
+            return 1;
+        }
+        atual = atual->parent;
+    }
+    return 0;
+}
+
+void aStar(int start[3][3]) {
+    int m_objetivo[3][3] = {{1,2,3},{4,5,6},{7,8,0}};
+
+    No* openList[1000]; // Lista de nós a serem explorados
+    int openCount = 0;
+
+    No* inicioNo = criaNo(start, 0, heuristica(start), NULL);
+    openList[openCount++] = inicioNo;
+
+    while (openCount > 0) {
+        // Encontrar o nó com menor f na openList
+        int minIndex = 0;
+        for (int i = 1; i < openCount; i++) {
+            if (openList[i]->f < openList[minIndex]->f) {
+                minIndex = i;
+            }
+        }
+
+        No* atual = openList[minIndex];
+
+        // Verificar se o objetivo foi alcançado
+        if (avalia(atual->puzzle)) {
+            printf("Solução encontrada!\n");
+            while (atual != NULL) {
+                print(atual->puzzle);
+                atual = atual->parent;
+            }
+            return;
+        }
+
+        // Remover o nó atual da openList
+        for (int i = minIndex; i < openCount - 1; i++) {
+            openList[i] = openList[i + 1];
+        }
+        openCount--;
+
+        // Gerar os sucessores
+        int zeroX, zeroY;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (atual->puzzle[i][j] == 0) {
+                    zeroX = i;
+                    zeroY = j;
+                }
+            }
+        }
+
+        int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Movimentos possíveis (cima, baixo, esquerda, direita)
+        for (int i = 0; i < 4; i++) {
+            int newX = zeroX + moves[i][0];
+            int newY = zeroY + moves[i][1];
+
+            if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) {
+                int newPuzzle[3][3];
+                memcpy(newPuzzle, atual->puzzle, sizeof(newPuzzle));
+                // Trocar o espaço vazio com a posição adjacente
+                newPuzzle[zeroX][zeroY] = newPuzzle[newX][newY];
+                newPuzzle[newX][newY] = 0;
+
+                if (visitado(atual, newPuzzle) != 1) {
+                    No* successor = criaNo(newPuzzle, atual->g + 1, heuristica(newPuzzle), atual);
+                    openList[openCount++] = successor;
+                }
+            }
+        }
+    }
+
+    printf("Nenhuma solução encontrada.\n");
+}
+
