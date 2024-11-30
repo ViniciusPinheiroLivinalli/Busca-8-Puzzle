@@ -14,6 +14,8 @@
 #define KEY_RIGHT 77
 #define KEY_LEFT 75
 
+// ESTRUTURAS
+
 typedef struct node{
     int puzzle[3][3]; //estado
     int g; // Custo do caminho até agora
@@ -21,6 +23,8 @@ typedef struct node{
     int f; // Custo total (f = g + h)
     struct node *parent; // Ponteiro para o estado pai
 } Node;
+
+// CABEÇALHO DAS FUNÇÕES
 
 void gerar(int *lista);
 void print(int matriz[3][3]);
@@ -31,6 +35,8 @@ int heuristica(int atual[3][3]);
 Node *criaNo(int puzzle[3][3], int g, int h, Node *parent);
 int visitado(Node* atual, int puzzle[3][3]);
 void imprimePilha (Pilha* p);
+
+// MAIN
 
 int main(){
     int jogar = 1;
@@ -114,12 +120,16 @@ int main(){
     return 0;
 }
 
+// FUNCOES PARA ESTRUTURAS DE DADOS
+
 void imprimePilha (Pilha* p){
     No* q;
     for (q=p->Topo; q!=NULL; q=q->prox){
         print(q->puzzle);
     }
 };
+
+// FUNCOES PARA O JOGO
 
 void gerar(int *lista){
 
@@ -205,24 +215,6 @@ void sucessora(int movimento, int *i, int *j, int matriz[3][3]){// adicionar mat
     matriz[aux_i][aux_j] = aux_valor; //definindo a posi��o antiga do vazio com o novo valor
 }
 
-void sucessoraIa(Node *current, int i_moves,int *zeroX, int *zeroY, int *newX, int *newY){
-
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (current->puzzle[i][j] == 0) {
-                    *zeroX = i;
-                    *zeroY = j;
-                }
-            }
-        }
-
-         int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Movimentos possíveis (cima, baixo, esquerda, direita)
-            if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) {
-                *newX = *zeroX + moves[i_moves][0];
-                *newY = *zeroY + moves[i_moves][1];
-            }
-}
-
 int avalia(int m_comparar[3][3]){
     int v_procurado[3][3] = {{1,2,3},{4,5,6},{7,8,0}}, sum = 0; // usar soma pra verificar quantos numeros est�o em uma posi��o correta
 
@@ -239,6 +231,8 @@ int avalia(int m_comparar[3][3]){
         return 0; // caso o vetor atual nao seja igual ao objetivo, ele retorna 0, ou seja, a solu��o n�o foi encontrada
     }
 }
+
+// FUNCOES MENU
 
 void menu_inicial(int *escolha){
     int tecla = 0;
@@ -297,6 +291,8 @@ void menu_IA(int *escolha){
         }
     }
 }
+
+// FUNCOES A*
 
 int heuristica(int atual[3][3]){
     int distancia = 0;
