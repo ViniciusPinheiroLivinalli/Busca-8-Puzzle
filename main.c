@@ -39,37 +39,15 @@ typedef struct {
 } Pilha;
 
 //PILHA
-
-void inicializarPilha(Pilha* p) {
-    p->topo = NULL;
-}
-
-void empilhar(Pilha* p, Estado estado) {
-    No* novo = (No*)malloc(sizeof(No));
-    novo->estado = estado;
-    novo->proximo = p->topo;
-    p->topo = novo;
-}
-
-Estado desempilhar(Pilha* p) {
-    Estado estado = p->topo->estado;
-    No* temp = p->topo;
-    p->topo = p->topo->proximo;
-    free(temp);
-    return estado;
-}
-
-int pilhaVazia(Pilha* p) {
-    return p->topo == NULL;
-}
-
-int movimentoValido(int i, int j) {
-    return i >= 0 && i < 3 && j >= 0 && j < 3;
-}
+void inicializarPilha(Pilha* p);
+void empilhar(Pilha* p, Estado estado);
+Estado desempilhar(Pilha* p);
+int pilhaVazia(Pilha* p);
+int movimentoValido(int i, int j);
 
 
 //FUNÇÃO DFS
-//int profIterativa(Estado estado);
+int Busca(Estado estado, Pilha *pilha, int profundidade);
 
 
 int main(){
@@ -128,6 +106,9 @@ int main(){
                 sucessora(tecla, &pos1, &pos2, m);
                 retorno = avalia(m);
                 system("cls");
+                printf("\n\nParabéns você conseguiu encontrar a solução!!\n\n\n\n\n\n\n\n\n");
+                system("pause");
+                system("cls");
             }
         }else{
             if(escolha == 2){
@@ -148,69 +129,17 @@ int main(){
                 .pos_vazio_i = pos1,
                 .pos_vazio_j = pos2
                 };
-                for(int limite = 0; limite < PROFUNDIDADE; limite++) {
-                    empilhar(&pilha, inicial);
-                    while(!pilhaVazia(&pilha)) {
-                        Estado atual = desempilhar(&pilha);
-
-                        if (avalia(atual.tabuleiro)) {
-                            printf("Solução encontrada na profundidade %d\n", atual.profundidade);
-                            print(atual.tabuleiro);
-                            system("pause");
-                            return;
-                        }
-
-                        if (atual.profundidade < limite) {
-                            int movimentos_i[4] = {1, 0, -1, 0};
-                            int movimentos_j[4] = {0, 1, 0, -1};
-                            Estado novo = atual;
-                            int vaz_i = novo.pos_vazio_i, vaz_j = novo.pos_vazio_j, mov_i = vaz_i, mov_j = vaz_j;
-
-                            for (int m = 0; m < 4; m++) {
-
-                                // Apenas realiza alterações se o movimento for válido
-                                if (movimentoValido(mov_i + movimentos_i[m], mov_j + movimentos_j[m])) {
-                                    mov_i += movimentos_i[m];
-                                    mov_j += movimentos_j[m];
-                                    // Realiza a troca no tabuleiro
-                                    novo.tabuleiro[vaz_i][vaz_j] = novo.tabuleiro[mov_i][mov_j];
-                                    novo.tabuleiro[mov_i][mov_j] = 0;
-
-                                    // Atualiza a posição vazia
-                                    novo.pos_vazio_i = mov_i;
-                                    novo.pos_vazio_j = mov_j;
-
-                                    // Incrementa a profundidade do estado
-                                    novo.profundidade++;
-
-                                    // Empilha o estado novo
-                                    empilhar(&pilha, novo);
-
-                                }
-
-                                // Caso contrário, ignora o estado e não empilha
-                                printf("\n\n\n\n\n");
-                                print(novo.tabuleiro);
-                                printf("\n\n\n\n");
-                                printf("\t\t  i = %d | j = %d\n\n\n", novo.pos_vazio_i + 1, novo.pos_vazio_j + 1);
-                                system("pause");
-                                system("cls");
-                            }
-                        }
-
-                    }
-                }
+                Busca(inicial, &pilha, PROFUNDIDADE);
             }
         }
-        printf("\n\nParabéns você conseguiu encontrar a solução!!\n\n\n\n\n\n\n\n\n");
-        system("pause");
-        system("cls");
+
         printf("Deseja jogar novamente? <S/N> ");
         fflush(stdin);
         resp = getchar();
         if(toupper(resp) == 'N'){
             jogar = 0;
         }
+        system("cls");
     }
     return 0;
 }
@@ -374,24 +303,84 @@ void menu_IA(int *escolha){
     }
 }
 
-/*int profIterativa(Estado estado){
-    for(int limite = 0; limite < PROFUNDIDADE; limite++){
-        Pilha pilha;
-        inicializarPilha(&pilha);
-        empilhar(&pilha, estado);
+void inicializarPilha(Pilha* p) {
+    p->topo = NULL;
+}
 
-        while(!pilhaVazia(&pilha)) {
-            Estado atual = desempilhar(&pilha);
+void empilhar(Pilha* p, Estado estado) {
+    No* novo = (No*)malloc(sizeof(No));
+    novo->estado = estado;
+    novo->proximo = p->topo;
+    p->topo = novo;
+}
 
-            if(avalia(&atual)){
-                printf("Solução encontrada na profundidade %d\n", atual.profundidade);
-                return 1;
-            }
+Estado desempilhar(Pilha* p) {
+    Estado estado = p->topo->estado;
+    No* temp = p->topo;
+    p->topo = p->topo->proximo;
+    free(temp);
+    return estado;
+}
 
-            if(atual.profundidade < limite){
+int pilhaVazia(Pilha* p) {
+    return p->topo == NULL;
+}
 
+int movimentoValido(int i, int j) {
+    return i >= 0 && i < 3 && j >= 0 && j < 3;
+}
+
+int Busca(Estado inicial, Pilha *pilha, int profundidade) {
+    empilhar(pilha, inicial);  // Start by pushing the initial state
+
+    int movimentos_i[4] = {1, 0, -1, 0};
+    int movimentos_j[4] = {0, 1, 0, -1};
+
+    while (!pilhaVazia(pilha)) {
+        Estado atual = desempilhar(pilha);
+
+        if (avalia(atual.tabuleiro) == 1) {
+            printf("Solução encontrada na profundidade %d\n", atual.profundidade);
+            print(atual.tabuleiro);
+            system("pause");
+            system("cls");
+            return 0;
+        }
+
+        if (atual.profundidade < profundidade) {
+            for (int m = 0; m < 4; m++) {
+                int novo_i = atual.pos_vazio_i + movimentos_i[m];
+                int novo_j = atual.pos_vazio_j + movimentos_j[m];
+                printf("%d", movimentos_j[m]);
+
+                if (movimentoValido(novo_i, novo_j)) {
+                    Estado novo = atual;
+
+                    // Swap the empty space with the adjacent tile
+                    novo.tabuleiro[atual.pos_vazio_i][atual.pos_vazio_j] = novo.tabuleiro[novo_i][novo_j];
+                    novo.tabuleiro[novo_i][novo_j] = 0;
+
+                    novo.pos_vazio_i = novo_i;
+                    novo.pos_vazio_j = novo_j;
+                    novo.profundidade++;
+
+//                    printf("\n\n\n\n\n");
+//                    print(novo.tabuleiro);
+//                    printf("\n\n\n\n\n");
+//                    printf("\t i: %d j: %d\n\n", novo.pos_vazio_i, novo.pos_vazio_j);
+//                    system("pause");
+//                    system("cls");
+
+                    // Only add to stack if not already solved
+                    if (avalia(novo.tabuleiro) != 1) {
+                        empilhar(pilha, novo);
+                    }
+                }
             }
         }
     }
-} */
+
+    printf("Sem solução\n");
+    return -1;
+}
 

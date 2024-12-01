@@ -27,7 +27,7 @@ bool dfsIterativa(Estado inicial);
 // Função principal
 int main() {
     Estado inicial = {
-        .tabuleiro = {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}}, // Tabuleiro inicial
+        .tabuleiro = {{1, 2, 7}, {6, 4, 8}, {0, 3, 5}}, // Tabuleiro inicial
         .profundidade = 0,
         .pos_vazio_i = 2, // Posição do vazio (0)
         .pos_vazio_j = 2
@@ -136,6 +136,9 @@ bool dfsIterativa(Estado inicial) {
                         novoEstado.profundidade = atual.profundidade + 1;
 
                         pilha[++topo] = novoEstado;
+                        printTabuleiro(novoEstado.tabuleiro);
+                        system("pause");
+                        system("cls");
                     }
                 }
             }
