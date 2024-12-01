@@ -136,7 +136,7 @@ int main(){
             if(escolhaIA == 1){
                 //A*
             }
-            else if(escolhaIA ==2){
+            else if(escolhaIA == 2){
                 //DFS iterativa
                 Pilha pilha;
                 inicializarPilha(&pilha);
@@ -150,7 +150,6 @@ int main(){
                 };
                 for(int limite = 0; limite < PROFUNDIDADE; limite++) {
                     empilhar(&pilha, inicial);
-                    int movimentos[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
                     while(!pilhaVazia(&pilha)) {
                         Estado atual = desempilhar(&pilha);
 
@@ -162,42 +161,40 @@ int main(){
                         }
 
                         if (atual.profundidade < limite) {
+                            int movimentos_i[4] = {1, 0, -1, 0};
+                            int movimentos_j[4] = {0, 1, 0, -1};
+                            Estado novo = atual;
+                            int vaz_i = novo.pos_vazio_i, vaz_j = novo.pos_vazio_j, mov_i = vaz_i, mov_j = vaz_j;
+
                             for (int m = 0; m < 4; m++) {
-                                int novo_i = atual.pos_vazio_i + movimentos[m][0];
-                                int novo_j = atual.pos_vazio_j + movimentos[m][1];
 
-                                if (movimentoValido(novo_i, novo_j)) {
-                                    // Criar uma cópia do estado atual
-                                    Estado novo;
-                                    for (int i = 0; i < 3; i++) {
-                                        for (int j = 0; j < 3; j++) {
-                                            novo.tabuleiro[i][j] = atual.tabuleiro[i][j];
-                                        }
-                                    }
-                                    novo.pos_vazio_i = atual.pos_vazio_i;
-                                    novo.pos_vazio_j = atual.pos_vazio_j;
+                                // Apenas realiza alterações se o movimento for válido
+                                if (movimentoValido(mov_i + movimentos_i[m], mov_j + movimentos_j[m])) {
+                                    mov_i += movimentos_i[m];
+                                    mov_j += movimentos_j[m];
+                                    // Realiza a troca no tabuleiro
+                                    novo.tabuleiro[vaz_i][vaz_j] = novo.tabuleiro[mov_i][mov_j];
+                                    novo.tabuleiro[mov_i][mov_j] = 0;
 
-                                    // Atualizar o tabuleiro e as posições
-                                    printf("\n Posição do vazio: i: %d j: %d", novo_i + 1, novo_j + 1);
-                                    printf("\n Valor vazio: %d", novo.tabuleiro[atual.pos_vazio_i][atual.pos_vazio_j]);
-                                    printf("\n Posição do valor anterior: i: %d j: %d", atual.pos_vazio_i + 1, atual.pos_vazio_j + 1);
-                                    printf("\n Valor anterior: %d \n", novo.tabuleiro[novo_i][novo_j]);
+                                    // Atualiza a posição vazia
+                                    novo.pos_vazio_i = mov_i;
+                                    novo.pos_vazio_j = mov_j;
 
+                                    // Incrementa a profundidade do estado
+                                    novo.profundidade++;
 
-                                    novo.tabuleiro[atual.pos_vazio_i][atual.pos_vazio_j] = novo.tabuleiro[novo_i][novo_j];
-                                    novo.tabuleiro[novo_i][novo_j] = 0;
-                                    novo.pos_vazio_i = novo_i;
-                                    novo.pos_vazio_j = novo_j;
-                                    novo.profundidade = atual.profundidade + 1;
-
+                                    // Empilha o estado novo
                                     empilhar(&pilha, novo);
-                                    printf("\n\n\n\n\n");
-                                    print(novo.tabuleiro);
-                                    printf("\n\n\n\n");
-                                    printf("\t\t  i = %d | j = %d\n\n\n\n\n\n", novo.pos_vazio_i + 1, novo.pos_vazio_j + 1);
-                                    system("pause");
-                                    system("cls");
+
                                 }
+
+                                // Caso contrário, ignora o estado e não empilha
+                                printf("\n\n\n\n\n");
+                                print(novo.tabuleiro);
+                                printf("\n\n\n\n");
+                                printf("\t\t  i = %d | j = %d\n\n\n", novo.pos_vazio_i + 1, novo.pos_vazio_j + 1);
+                                system("pause");
+                                system("cls");
                             }
                         }
 
