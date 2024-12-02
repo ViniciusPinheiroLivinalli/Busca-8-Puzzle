@@ -2,27 +2,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct Node {
-    int val;
-    struct Node* next;
-};
+typedef struct node{
+    int puzzle[3][3]; //estado
+    int g; // Custo do caminho até agora
+    int h; // Valor da heurística
+    int f; // Custo total (f = g + h)
+    struct node *parent; // Ponteiro para o estado pai
+} Node;
+
+typedef struct spa {
+    Node no;
+    struct spa *next;
+}Space;
+
 
 // Function to insert a new_node in the result list.
-struct Node* sortedInsert(struct Node* createNode,
-                          struct Node* sorted) {
+Space *sortedInsert(Space *createNode, Space *sorted) {
 
     // Special case for the head end
     if (sorted == NULL ||
-        sorted->val >= createNode->val) {
+        sorted->no->f >= createNode->no->f) {
         createNode->next = sorted;
         sorted = createNode;
     }
     else {
-        struct Node* curr = sorted;
+        Space* curr = sorted;
 
         // Locate the node before the point of insertion
-        while (curr->next != NULL &&
-               curr->next->val < createNode->val) {
+        while (curr->next != NULL && curr->next->no->val < createNode->no->val) {
             curr = curr->next;
         }
         createNode->next = curr->next;
@@ -32,18 +39,18 @@ struct Node* sortedInsert(struct Node* createNode,
     return sorted;
 }
 
-struct Node* insertionSort(struct Node* head) {
+Space* insertionSort(Space* head) {
 
     // Initialize sorted linked list
-    struct Node* sorted = NULL;
-    struct Node* curr = head;
+    Space* sorted = NULL;
+    Space* curr = head;
 
     // Traverse the given linked list and insert
     // every node to sorted
     while (curr != NULL) {
 
         // Store next for next iteration
-        struct Node* next = curr->next;
+        Space* next = curr->next;
 
         // Insert current in sorted linked list
         sorted = sortedInsert(curr, sorted);
@@ -55,16 +62,15 @@ struct Node* insertionSort(struct Node* head) {
     return sorted;
 }
 
-void printList(struct Node* curr) {
+void printList(Space* curr) {
     while (curr != NULL) {
-        printf(" %d", curr->val);
+        printf(" %d", curr->no->f);
         curr = curr->next;
     }
 }
 
-struct Node* createNode(int x) {
-    struct Node* node =
-     (struct Node*)malloc(sizeof(struct Node));
+Space* createNode(int x) {
+    Space* node = (Space*)malloc(sizeof(Space));
     node->val = x;
     node->next = NULL;
     return node;
