@@ -12,7 +12,7 @@
 #define KEY_RIGHT 77
 #define KEY_LEFT 75
 
-#define PROFUNDIDADE 10
+#define PROFUNDIDADE 30
 
 void gerar(int *lista);
 void print(int matriz[3][3]);
