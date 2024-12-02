@@ -63,15 +63,15 @@ int main(){
         char tela2[9];
         gerar(tela);
         int retorno = 0, escolha, escolhaIA;
-        int m[3][3], pos = 0;
+        int m[3][3] = {{1,2,3},{4,5,6},{7,0,8}}, pos = 0;
 
-        for(int i = 0; i < 3; i++){
-            for(int j = 0; j < 3; j++){
-                m[i][j] = tela[pos];
-                pos++;
-                }
-            }
-
+//        for(int i = 0; i < 3; i++){
+//            for(int j = 0; j < 3; j++){
+//                m[i][j] = tela[pos];
+//                pos++;
+//                }
+//            }
+//
         for(int x = 0; x < 3; x++){
             for(int y = 0; y < 3; y++){
                 if(m[x][y] == 0){
@@ -343,6 +343,7 @@ int hash_estado(int tabuleiro[3][3]) {
     }
     return hash;
 }
+
 
 int BuscaProfundidadeIterativa(Estado inicial, Pilha *pilha, int limite_max) {
     // Aloca estados visitados uma única vez
