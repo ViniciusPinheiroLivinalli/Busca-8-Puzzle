@@ -1,3 +1,7 @@
+//TIRAR HASH E DEIXAR ITERAR (GARANTIR QUE EXPLORE TODA A PROFUNDIDADE SETADA
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
