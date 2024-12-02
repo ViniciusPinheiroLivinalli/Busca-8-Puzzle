@@ -1,7 +1,3 @@
-//TIRAR HASH E DEIXAR ITERAR (GARANTIR QUE EXPLORE TODA A PROFUNDIDADE SETADA
-
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
@@ -16,8 +12,7 @@
 #define KEY_RIGHT 77
 #define KEY_LEFT 75
 
-#define HASH_SIZE 1000000
-#define PROFUNDIDADE 5
+#define PROFUNDIDADE 10
 
 void gerar(int *lista);
 void print(int matriz[3][3]);
@@ -25,6 +20,7 @@ void sucessora(int movimento, int *i, int *j, int matriz[3][3]);
 int avalia(int m_comparar[3][3]);
 void menu_inicial(int *escolha);
 void menu_IA(int *escolha);
+void menu_Ambiente(int *escolhaAmb);
 
 //DFS ITERATIVA
 typedef struct {
@@ -52,8 +48,6 @@ int movimentoValido(int i, int j);
 
 //FUNÇÃO DFS
 int BuscaProfundidadeIterativa(Estado inicial, Pilha *pilha, int limite_max);
-int hash_estado(int tabuleiro[3][3]);
-
 
 int main(){
     int jogar = 1;
@@ -66,24 +60,8 @@ int main(){
         int tela[9], pos1 = 0, pos2 = 0, tecla;
         char tela2[9];
         gerar(tela);
-        int retorno = 0, escolha, escolhaIA;
-        int m[3][3] = {{1,2,3},{4,5,6},{7,0,8}}, pos = 0;
-
-//        for(int i = 0; i < 3; i++){
-//            for(int j = 0; j < 3; j++){
-//                m[i][j] = tela[pos];
-//                pos++;
-//                }
-//            }
-//
-        for(int x = 0; x < 3; x++){
-            for(int y = 0; y < 3; y++){
-                if(m[x][y] == 0){
-                    pos1 = x;
-                    pos2 = y;
-                }
-            }
-        }
+        int retorno = 0, escolha, escolhaIA, escolhaAmb;
+        int m[3][3], pos = 0;
 
         system("color 9F");
         printf("\n\n\n\n\n");
@@ -101,6 +79,38 @@ int main(){
         system("cls");
 
         menu_inicial(&escolha);
+
+        menu_Ambiente(&escolhaAmb);
+
+        if(escolhaAmb == 1){
+            int temp[3][3] = {{0,5,2},{1,4,3},{7,8,6}};
+            memcpy(m, temp, sizeof(temp));
+        }else if(escolhaAmb == 2){
+            for(int i = 0; i < 3; i++){
+                for(int j = 0; j < 3; j++){
+                    printf("Digite o %d° valor do vetor: ", i + 1, j + 1);
+                    scanf("%d", &m[i][j]);
+                }
+            }
+        }else if(escolhaAmb == 3){
+            for(int i = 0; i < 3; i++){
+                for(int j = 0; j < 3; j++){
+                    m[i][j] = tela[pos];
+                    pos++;
+                }
+            }
+        }
+
+
+        for(int x = 0; x < 3; x++){
+            for(int y = 0; y < 3; y++){
+                if(m[x][y] == 0){
+                    pos1 = x;
+                    pos2 = y;
+                }
+            }
+        }
+
         if(escolha == 1){
             while(retorno!= 1){
                 printf("\n\n\n\n\n");
@@ -137,7 +147,7 @@ int main(){
             }
         }
 
-        printf("Deseja jogar novamente? <S/N> ");
+        printf("\n\n\n\n\t   Deseja jogar novamente? <S/N> ");
         fflush(stdin);
         resp = getchar();
         if(toupper(resp) == 'N'){
@@ -307,6 +317,36 @@ void menu_IA(int *escolha){
     }
 }
 
+void menu_Ambiente(int *escolha){
+    int tecla = 0;
+    *escolha = 1;
+
+    while (1) {
+        system("cls");
+
+        printf("\n\n\n\t\t\t   *******************     8 Puzzle   ********************\n");
+        printf("\t\t\t   *                  | Selecione o Ambiente |                *\n");
+        printf("\t\t\t   *                                                          *\n");
+        printf("\t\t\t   * %s Ambiente Teste                                        *\n", (*escolha == 1) ? "->" : "  ");
+        printf("\t\t\t   * %s Ambiente Manual                                       *\n", (*escolha == 2) ? "->" : "  ");
+        printf("\t\t\t   * %s Ambiente Aleatório                                    *\n", (*escolha == 3) ? "->" : "  ");
+        printf("\t\t\t   *                                                          *\n");
+        printf("\t\t\t   ************************************************************\n");
+
+        tecla = getch();
+
+        //NAVEGAÇÃO
+        if (tecla == KEY_UP) {
+            if (*escolha > 1) (*escolha)--;
+        } else if (tecla == KEY_DOWN) {
+            if (*escolha < 3) (*escolha)++;
+        } else if (tecla == 27 || tecla == 13) {
+            system("cls");
+            return;
+        }
+    }
+}
+
 void inicializarPilha(Pilha* p) {
     p->topo = NULL;
 }
@@ -338,25 +378,7 @@ int movimentoValido(int i, int j) {
     return i >= 0 && i < 3 && j >= 0 && j < 3;
 }
 
-int hash_estado(int tabuleiro[3][3]) {
-    int hash = 0;
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            hash = hash * 10 + tabuleiro[i][j];
-        }
-    }
-    return hash;
-}
-
-
 int BuscaProfundidadeIterativa(Estado inicial, Pilha *pilha, int limite_max) {
-    // Aloca estados visitados uma única vez
-    int *estados_visitados = (int*)calloc(HASH_SIZE, sizeof(int));
-    if (!estados_visitados) {
-        printf("Erro de alocação de memória!\n");
-        return -1;
-    }
-
     int movimentos_explorados = 0;
     inicializarPilha(pilha);
     empilhar(pilha, inicial);
@@ -370,11 +392,10 @@ int BuscaProfundidadeIterativa(Estado inicial, Pilha *pilha, int limite_max) {
         movimentos_explorados++;
 
         if (avalia(atual.tabuleiro)) {
-            printf("\n Solução encontrada!\n");
-            printf("Profundidade: %d\n", atual.profundidade);
-            printf("Movimentos explorados: %d\n", movimentos_explorados);
+            printf("\n\t\t   Solução encontrada!\n\n");
+            printf("\t\t    Profundidade: %d\n\n", atual.profundidade);
+            printf("\t\tMovimentos explorados: %d\n", movimentos_explorados);
             print(atual.tabuleiro);
-            free(estados_visitados);
             return 1;
         }
 
@@ -387,7 +408,6 @@ int BuscaProfundidadeIterativa(Estado inicial, Pilha *pilha, int limite_max) {
             print(atual.tabuleiro);
             printf("\n\n\n\n \t\t Estados adjacentes:\n\n");
 
-            // Buffer para armazenar estados adjacentes
             Estado estados_adj[4];
             int num_adj = 0;
             char* movimentos_adj[4];
@@ -404,24 +424,18 @@ int BuscaProfundidadeIterativa(Estado inicial, Pilha *pilha, int limite_max) {
                     novo.pos_vazio_j = novo_j;
                     novo.profundidade++;
 
-                    int hash = hash_estado(novo.tabuleiro) % HASH_SIZE;
-                    if (!estados_visitados[hash]) {
-                        estados_visitados[hash] = 1;
-                        estados_adj[num_adj] = novo;
-                        movimentos_adj[num_adj] = direcoes[m];
-                        num_adj ++;
-                        empilhar(pilha, novo);
-                    }
+                    estados_adj[num_adj] = novo;
+                    movimentos_adj[num_adj] = direcoes[m];
+                    num_adj++;
+                    empilhar(pilha, novo);
                 }
             }
 
-            // Imprime os nomes dos movimentos
             for (int adj = 0; adj < num_adj; adj++) {
                 printf("\t\t%s\t", movimentos_adj[adj]);
             }
             printf("\n\n");
 
-            // Imprime estados adjacentes lado a lado
             for (int i = 0; i < 3; i++) {
                 for (int adj = 0; adj < num_adj; adj++) {
                     for (int j = 0; j < 3; j++) {
@@ -439,6 +453,5 @@ int BuscaProfundidadeIterativa(Estado inicial, Pilha *pilha, int limite_max) {
     }
 
     printf("\n Não encontrou solução até a profundidade %d\n", limite_max);
-    free(estados_visitados);
     return 0;
 }
