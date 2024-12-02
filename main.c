@@ -21,7 +21,6 @@ void sucessora(int movimento, int *i, int *j, int matriz[3][3]);
 int avalia(int m_comparar[3][3]);
 void menu_inicial(int *escolha);
 void menu_IA(int *escolha);
-int menu_ambiente();
 
 //DFS ITERATIVA
 typedef struct {
@@ -64,7 +63,7 @@ int main(){
         char tela2[9];
         gerar(tela);
         int retorno = 0, escolha, escolhaIA;
-        int pos = 0;
+        int m[3][3] = {{1,2,3},{4,5,6},{7,0,8}}, pos = 0;
 
 //        for(int i = 0; i < 3; i++){
 //            for(int j = 0; j < 3; j++){
@@ -73,14 +72,14 @@ int main(){
 //                }
 //            }
 //
-        /*for(int x = 0; x < 3; x++){
+        for(int x = 0; x < 3; x++){
             for(int y = 0; y < 3; y++){
                 if(m[x][y] == 0){
                     pos1 = x;
                     pos2 = y;
                 }
             }
-        }*/
+        }
 
         system("color 9F");
         printf("\n\n\n\n\n");
@@ -98,7 +97,6 @@ int main(){
         system("cls");
 
         menu_inicial(&escolha);
-        int m[3][3] = menu_ambiente();
         if(escolha == 1){
             while(retorno!= 1){
                 printf("\n\n\n\n\n");
@@ -301,57 +299,6 @@ void menu_IA(int *escolha){
         } else if (tecla == 27 || tecla == 13) {
             system("cls");
             return;
-        }
-    }
-}
-
-int menu_ambiente(){
-    int tecla = 0;
-    int escolha = 1;
-
-    while (1) {
-        system("cls");
-
-        printf("\n\n\n\t\t\t   *******************     8 Puzzle   ********************\n");
-        printf("\t\t\t   *                  | Selecione um Ambiente |               *\n");
-        printf("\t\t\t   *                                                          *\n");
-        printf("\t\t\t   * %s Ambiente Manual                                       *\n", (*escolha == 1) ? "->" : "  ");
-        printf("\t\t\t   * %s Ambiente de Testes                                    *\n", (*escolha == 2) ? "->" : "  ");
-        printf("\t\t\t   * %s Ambiente Aleatorio                                    *\n", (*escolha == 3) ? "->" : "  ");
-        printf("\t\t\t   *                                                          *\n");
-        printf("\t\t\t   ************************************************************\n");
-
-        tecla = getch();
-
-        //NAVEGAÇÃO
-        if (tecla == KEY_UP) {
-            if (escolha > 1) (escolha)--;
-        } else if (tecla == KEY_DOWN) {
-            if (escolha < 3) (escolha)++;
-        } else if (tecla == 27 || tecla == 13) {
-            system("cls");
-            if(escolha == 3){
-                int manual[3][3];
-                for(int i = 0; i < 3; i++){
-                    for(int j; j < 3; j++){
-                        printf("Digite o %d° numero da %d° linha", i + 1, j + 1);
-                        scanf("%d", &manual[i][j]);
-                    }
-                }
-                return manual[3][3];
-            }
-            if(escolha == 2){
-                int teste[3][3] = {{1,2,3},{4,5,6},{7,0,8}}, tela;
-            }
-            if(escolha == 1){
-                gerar(tela);
-                for(int i = 0; i < 3; i++){
-                    for(int j = 0; j < 3; j++){
-                        m[i][j] = tela[pos];
-                        pos++;
-                    }
-                }
-            }
         }
     }
 }
