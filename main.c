@@ -12,6 +12,7 @@
 #define KEY_RIGHT 77
 #define KEY_LEFT 75
 
+#define HASH_SIZE 1000000
 #define PROFUNDIDADE 5
 
 void gerar(int *lista);
@@ -45,9 +46,9 @@ Estado desempilhar(Pilha* p);
 int pilhaVazia(Pilha* p);
 int movimentoValido(int i, int j);
 
-
 //FUNÇÃO DFS
-int Busca(Estado estado, Pilha *pilha, int profundidade);
+int BuscaProfundidadeIterativa(Estado inicial, Pilha *pilha, int limite_max);
+int hash_estado(int tabuleiro[3][3]);
 
 
 int main(){
@@ -106,10 +107,10 @@ int main(){
                 sucessora(tecla, &pos1, &pos2, m);
                 retorno = avalia(m);
                 system("cls");
-                printf("\n\nParabéns você conseguiu encontrar a solução!!\n\n\n\n\n\n\n\n\n");
-                system("pause");
-                system("cls");
             }
+            printf("\n\nParabéns você conseguiu encontrar a solução!!\n\n\n\n\n\n\n\n\n");
+            system("pause");
+            system("cls");
         }else{
             if(escolha == 2){
                 menu_IA(&escolhaIA);
@@ -117,19 +118,18 @@ int main(){
             if(escolhaIA == 1){
                 //A*
             }
-            else if(escolhaIA == 2){
-                //DFS iterativa
+            else if(escolhaIA == 2) {
                 Pilha pilha;
                 inicializarPilha(&pilha);
                 Estado inicial = {
-                .tabuleiro = {{m[0][0], m[0][1], m[0][2]},
-                              {m[1][0], m[1][1], m[1][2]},
-                              {m[2][0], m[2][1], m[2][2]}},
-                .profundidade = 0,
-                .pos_vazio_i = pos1,
-                .pos_vazio_j = pos2
+                    .tabuleiro = {{m[0][0], m[0][1], m[0][2]},
+                                  {m[1][0], m[1][1], m[1][2]},
+                                  {m[2][0], m[2][1], m[2][2]}},
+                    .profundidade = 0,
+                    .pos_vazio_i = pos1,
+                    .pos_vazio_j = pos2
                 };
-                Busca(inicial, &pilha, PROFUNDIDADE);
+                int resultado = BuscaProfundidadeIterativa(inicial, &pilha, PROFUNDIDADE);
             }
         }
 
@@ -315,6 +315,10 @@ void empilhar(Pilha* p, Estado estado) {
 }
 
 Estado desempilhar(Pilha* p) {
+    if (p->topo == NULL) {
+        Estado vazio = {{0}};
+        return vazio;
+    }
     Estado estado = p->topo->estado;
     No* temp = p->topo;
     p->topo = p->topo->proximo;
@@ -330,57 +334,106 @@ int movimentoValido(int i, int j) {
     return i >= 0 && i < 3 && j >= 0 && j < 3;
 }
 
-int Busca(Estado inicial, Pilha *pilha, int profundidade) {
-    empilhar(pilha, inicial);  // Start by pushing the initial state
+int hash_estado(int tabuleiro[3][3]) {
+    int hash = 0;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            hash = hash * 10 + tabuleiro[i][j];
+        }
+    }
+    return hash;
+}
 
-    int movimentos_i[4] = {1, 0, -1, 0};
-    int movimentos_j[4] = {0, 1, 0, -1};
+int BuscaProfundidadeIterativa(Estado inicial, Pilha *pilha, int limite_max) {
+    // Aloca estados visitados uma única vez
+    int *estados_visitados = (int*)calloc(HASH_SIZE, sizeof(int));
+    if (!estados_visitados) {
+        printf("Erro de alocação de memória!\n");
+        return -1;
+    }
+
+    int movimentos_explorados = 0;
+    inicializarPilha(pilha);
+    empilhar(pilha, inicial);
+
+    printf("\n\t\t TABULEIRO INICIAL \n", limite_max);
+    print(inicial.tabuleiro);
+    printf("\n");
 
     while (!pilhaVazia(pilha)) {
         Estado atual = desempilhar(pilha);
+        movimentos_explorados++;
 
-        if (avalia(atual.tabuleiro) == 1) {
-            printf("Solução encontrada na profundidade %d\n", atual.profundidade);
+        if (avalia(atual.tabuleiro)) {
+            printf("\n Solução encontrada!\n");
+            printf("Profundidade: %d\n", atual.profundidade);
+            printf("Movimentos explorados: %d\n", movimentos_explorados);
             print(atual.tabuleiro);
-            system("pause");
-            system("cls");
-            return 0;
+            free(estados_visitados);
+            return 1;
         }
 
-        if (atual.profundidade < profundidade) {
-            for (int m = 0; m < 4; m++) {
-                int novo_i = atual.pos_vazio_i + movimentos_i[m];
-                int novo_j = atual.pos_vazio_j + movimentos_j[m];
-                printf("%d", movimentos_j[m]);
+        if (atual.profundidade < limite_max) {
+            int movimentos[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+            char* direcoes[4] = {"  CIMA", "  BAIXO", "ESQUERDA", "DIREITA "};
+
+            printf("_______________________________________________________________________________________________________________________");
+            printf("\n\n\t\t Estado atual (Prof: %d):\n", atual.profundidade);
+            print(atual.tabuleiro);
+            printf("\n\n\n\n \t\t Estados adjacentes:\n\n");
+
+            // Buffer para armazenar estados adjacentes
+            Estado estados_adj[4];
+            int num_adj = 0;
+            char* movimentos_adj[4];
+
+            for (int m = 3; m >= 0; m--) {
+                int novo_i = atual.pos_vazio_i + movimentos[m][0];
+                int novo_j = atual.pos_vazio_j + movimentos[m][1];
 
                 if (movimentoValido(novo_i, novo_j)) {
                     Estado novo = atual;
-
-                    // Swap the empty space with the adjacent tile
                     novo.tabuleiro[atual.pos_vazio_i][atual.pos_vazio_j] = novo.tabuleiro[novo_i][novo_j];
                     novo.tabuleiro[novo_i][novo_j] = 0;
-
                     novo.pos_vazio_i = novo_i;
                     novo.pos_vazio_j = novo_j;
                     novo.profundidade++;
 
-//                    printf("\n\n\n\n\n");
-//                    print(novo.tabuleiro);
-//                    printf("\n\n\n\n\n");
-//                    printf("\t i: %d j: %d\n\n", novo.pos_vazio_i, novo.pos_vazio_j);
-//                    system("pause");
-//                    system("cls");
-
-                    // Only add to stack if not already solved
-                    if (avalia(novo.tabuleiro) != 1) {
+                    int hash = hash_estado(novo.tabuleiro) % HASH_SIZE;
+                    if (!estados_visitados[hash]) {
+                        estados_visitados[hash] = 1;
+                        estados_adj[num_adj] = novo;
+                        movimentos_adj[num_adj] = direcoes[m];
+                        num_adj ++;
                         empilhar(pilha, novo);
                     }
                 }
             }
+
+            // Imprime os nomes dos movimentos
+            for (int adj = 0; adj < num_adj; adj++) {
+                printf("\t\t%s\t", movimentos_adj[adj]);
+            }
+            printf("\n\n");
+
+            // Imprime estados adjacentes lado a lado
+            for (int i = 0; i < 3; i++) {
+                for (int adj = 0; adj < num_adj; adj++) {
+                    for (int j = 0; j < 3; j++) {
+                        if (estados_adj[adj].tabuleiro[i][j] == 0)
+                            printf("\t_");
+                        else
+                            printf("\t%d", estados_adj[adj].tabuleiro[i][j]);
+                    }
+                    printf("\t");
+                }
+                printf("\n");
+            }
+            printf("\n");
         }
     }
 
-    printf("Sem solução\n");
-    return -1;
+    printf("\n Não encontrou solução até a profundidade %d\n", limite_max);
+    free(estados_visitados);
+    return 0;
 }
-
