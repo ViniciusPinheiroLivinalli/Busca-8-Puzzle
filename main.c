@@ -91,12 +91,11 @@ int movimentoValido(int i, int j);
 int BuscaProfundidadeIterativa(Estado inicial, Pilha *pilha, int limite_max);
 
 int main(){
+    setlocale(LC_ALL,"UTF-8");
+
     int jogar = 1;
     char resp;
     while(jogar == 1){
-
-        setlocale(LC_ALL,"portuguese");
-
         int tela[9], pos1 = 0, pos2 = 0, tecla;
         char tela2[9];
         gerar(tela);
@@ -111,9 +110,9 @@ int main(){
         printf("\n");
 
         printf("\n");
-        printf("\t\tO objetivo do 8-Puzzle � organizar os n�meros de 1 a 8\n");
-        printf("\t\tem ordem crescente, com o espa�o vazio no �ltimo lugar.\n");
-        printf("\t\tVoc� pode mover o espa�o vazio aos blocos adjacentes.\n\n\n\n\n\n\n\n\n\n\n");
+        printf("\t\tO objetivo do 8-puzzle e organizar os numeros de 1 a 8.\n");
+        printf("\t\tem ordem crescente, com o espaço vazio no ultimo lugar.\n");
+        printf("\t\tVocê pode mover o espaço vazio aos blocos adjacentes.\n\n\n\n\n\n\n\n\n\n\n");
         printf("\n");
         system("pause");
         system("cls");
@@ -128,7 +127,7 @@ int main(){
         }else if(escolhaAmb == 2){
             for(int i = 0; i < 3; i++){
                 for(int j = 0; j < 3; j++){
-                    printf("Digite o %d� valor do vetor: ", i + 1, j + 1);
+                    printf("Digite o %d valor do vetor: ", i + 1, j + 1);
                     scanf("%d", &m[i][j]);
                 }
             }
@@ -668,78 +667,86 @@ int movimentoValido(int i, int j) {
 
 int BuscaProfundidadeIterativa(Estado inicial, Pilha *pilha, int limite_max) {
     int movimentos_explorados = 0;
-    inicializarPilha(pilha);
-    empilhar(pilha, inicial);
 
-    printf("\n\t\t TABULEIRO INICIAL \n", limite_max);
+    printf("\n\t\t TABULEIRO INICIAL \n");
     print(inicial.tabuleiro);
     printf("\n");
 
-    while (!pilhaVazia(pilha)) {
-        Estado atual = desempilhar(pilha);
-        movimentos_explorados++;
+    // Itera sobre cada profundidade limite
+    for (int profundidade_atual = 1; profundidade_atual <= limite_max; profundidade_atual++) {
+        printf("\n\t\tTentando profundidade: %d\n", profundidade_atual);
+        inicializarPilha(pilha);
+        empilhar(pilha, inicial);
 
-        if (avalia(atual.tabuleiro)) {
-            printf("\n\t\t   Solu��o encontrada!\n\n");
-            printf("\t\t    Profundidade: %d\n\n", atual.profundidade);
-            printf("\t\tMovimentos explorados: %d\n", movimentos_explorados);
-            print(atual.tabuleiro);
-            return 1;
-        }
+        while (!pilhaVazia(pilha)) {
+            Estado atual = desempilhar(pilha);
+            movimentos_explorados++;
 
-        if (atual.profundidade < limite_max) {
-            int movimentos[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-            char* direcoes[4] = {"  CIMA", "  BAIXO", "ESQUERDA", "DIREITA "};
-
-            printf("_______________________________________________________________________________________________________________________");
-            printf("\n\n\t\t Estado atual (Prof: %d):\n", atual.profundidade);
-            print(atual.tabuleiro);
-            printf("\n\n\n\n \t\t Estados adjacentes:\n\n");
-
-            Estado estados_adj[4];
-            int num_adj = 0;
-            char* movimentos_adj[4];
-
-            for (int m = 3; m >= 0; m--) {
-                int novo_i = atual.pos_vazio_i + movimentos[m][0];
-                int novo_j = atual.pos_vazio_j + movimentos[m][1];
-
-                if (movimentoValido(novo_i, novo_j)) {
-                    Estado novo = atual;
-                    novo.tabuleiro[atual.pos_vazio_i][atual.pos_vazio_j] = novo.tabuleiro[novo_i][novo_j];
-                    novo.tabuleiro[novo_i][novo_j] = 0;
-                    novo.pos_vazio_i = novo_i;
-                    novo.pos_vazio_j = novo_j;
-                    novo.profundidade++;
-
-                    estados_adj[num_adj] = novo;
-                    movimentos_adj[num_adj] = direcoes[m];
-                    num_adj++;
-                    empilhar(pilha, novo);
-                }
+            if (avalia(atual.tabuleiro)) {
+                printf("\n\t\t   Solução encontrada!\n\n");
+                printf("\t\t    Profundidade: %d\n\n", atual.profundidade);
+                printf("\t\tMovimentos explorados: %d\n", movimentos_explorados);
+                print(atual.tabuleiro);
+                return 1;
             }
 
-            for (int adj = 0; adj < num_adj; adj++) {
-                printf("\t\t%s\t", movimentos_adj[adj]);
-            }
-            printf("\n\n");
+            if (atual.profundidade < profundidade_atual) {
+                int movimentos[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+                char* direcoes[4] = {"  CIMA", "  BAIXO", "ESQUERDA", "DIREITA "};
 
-            for (int i = 0; i < 3; i++) {
-                for (int adj = 0; adj < num_adj; adj++) {
-                    for (int j = 0; j < 3; j++) {
-                        if (estados_adj[adj].tabuleiro[i][j] == 0)
-                            printf("\t_");
-                        else
-                            printf("\t%d", estados_adj[adj].tabuleiro[i][j]);
+                printf("_______________________________________________________________________________________________________________________");
+                printf("\n\n\t\t Estado atual (Prof: %d):\n", atual.profundidade);
+                print(atual.tabuleiro);
+                printf("\n\n\n\n \t\t Estados adjacentes:\n\n");
+
+                Estado estados_adj[4];
+                int num_adj = 0;
+                char* movimentos_adj[4];
+
+                // Gera estados em ordem inversa para manter a ordem de exploração
+                for (int m = 3; m >= 0; m--) {
+                    int novo_i = atual.pos_vazio_i + movimentos[m][0];
+                    int novo_j = atual.pos_vazio_j + movimentos[m][1];
+
+                    if (movimentoValido(novo_i, novo_j)) {
+                        Estado novo = atual;
+                        novo.tabuleiro[atual.pos_vazio_i][atual.pos_vazio_j] = novo.tabuleiro[novo_i][novo_j];
+                        novo.tabuleiro[novo_i][novo_j] = 0;
+                        novo.pos_vazio_i = novo_i;
+                        novo.pos_vazio_j = novo_j;
+                        novo.profundidade++;
+
+                        estados_adj[num_adj] = novo;
+                        movimentos_adj[num_adj] = direcoes[m];
+                        num_adj++;
+                        empilhar(pilha, novo);
                     }
-                    printf("\t");
+                }
+
+                // Exibe os estados adjacentes
+                for (int adj = 0; adj < num_adj; adj++) {
+                    printf("\t\t%s\t", movimentos_adj[adj]);
+                }
+                printf("\n\n");
+
+                for (int i = 0; i < 3; i++) {
+                    for (int adj = 0; adj < num_adj; adj++) {
+                        for (int j = 0; j < 3; j++) {
+                            if (estados_adj[adj].tabuleiro[i][j] == 0)
+                                printf("\t_");
+                            else
+                                printf("\t%d", estados_adj[adj].tabuleiro[i][j]);
+                        }
+                        printf("\t");
+                    }
+                    printf("\n");
                 }
                 printf("\n");
             }
-            printf("\n");
         }
+        printf("\nNão encontrou solução na profundidade %d\n", profundidade_atual);
     }
 
-    printf("\n N�o encontrou solu��o at� a profundidade %d\n", limite_max);
+    printf("\nNão encontrou solução até a profundidade %d\n", limite_max);
     return 0;
 }
