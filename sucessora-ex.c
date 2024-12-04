@@ -13,7 +13,7 @@ int sucessora(Node *current, int i_moves, int *newX, int *newY){
             }
         }
 
-         int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Movimentos possíveis (cima, baixo, esquerda, direita)
+         int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Movimentos possï¿½veis (cima, baixo, esquerda, direita)
             if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) {
                 *newX = zeroX + moves[i_moves][0];
                 *newY = zeroY + moves[i_moves][1];
