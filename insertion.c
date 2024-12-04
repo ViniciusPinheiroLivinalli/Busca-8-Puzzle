@@ -10,47 +10,46 @@ typedef struct node{
     struct node *parent; // Ponteiro para o estado pai
 } Node;
 
-typedef struct spa {
-    Node no;
-    struct spa *next;
-}Space;
+typedef struct noOrd {
+    Node *no;
+    struct noOrd *next;
+}noOrdenado;
 
 
 // Function to insert a new_node in the result list.
-Space *sortedInsert(Space *createNode, Space *sorted) {
+noOrdenado *sortedInsert(noOrdenado *createNode, noOrdenado *sorted) {
 
     // Special case for the head end
-    if (sorted == NULL ||
-        sorted->no->f >= createNode->no->f) {
+    if (sorted == NULL || sorted->no->f >= createNode->no->f) {
         createNode->next = sorted;
         sorted = createNode;
     }
     else {
-        Space* curr = sorted;
+        noOrdenado* curr = sorted;
 
         // Locate the node before the point of insertion
-        while (curr->next != NULL && curr->next->no->val < createNode->no->val) {
+        while (curr->next != NULL && curr->next->no->f < createNode->no->f) {
             curr = curr->next;
         }
-        createNode->next = curr->next;
+        createNode->next = curr->nex 211 1t;
         curr->next = createNode;
     }
 
     return sorted;
 }
 
-Space* insertionSort(Space* head) {
+noOrdenado* insertionSort(noOrdenado* head) {
 
     // Initialize sorted linked list
-    Space* sorted = NULL;
-    Space* curr = head;
+    noOrdenado * sorted = NULL;
+    noOrdenado * curr = head;
 
     // Traverse the given linked list and insert
     // every node to sorted
     while (curr != NULL) {
 
         // Store next for next iteration
-        Space* next = curr->next;
+        noOrdenado* next = curr->next;
 
         // Insert current in sorted linked list
         sorted = sortedInsert(curr, sorted);
@@ -62,16 +61,17 @@ Space* insertionSort(Space* head) {
     return sorted;
 }
 
-void printList(Space* curr) {
+void printList(noOrdenado* curr) {
     while (curr != NULL) {
         printf(" %d", curr->no->f);
         curr = curr->next;
     }
 }
 
-Space* createNode(int x) {
-    Space* node = (Space*)malloc(sizeof(Space));
-    node->val = x;
+noOrdenado* createNode(int x) {
+    noOrdenado* node = (noOrdenado*)malloc(sizeof(noOrdenado));
+    node->no = (Node*)malloc(sizeof(Node));
+    node->no->f = x;
     node->next = NULL;
     return node;
 }
@@ -80,13 +80,17 @@ int main() {
 
     // Create a hard-coded linked list:
     // 5->4->1->3->2
-    struct Node* head = createNode(5);
-    head->next = createNode(4);
-    head->next->next = createNode(1);
-    head->next->next->next = createNode(3);
-    head->next->next->next->next = createNode(2);
+    noOrdenado* head = createNode(5);
+//    head->next = createNode(4);
+//    head->next->next = createNode(1);
+//    head->next->next->next = createNode(3);
+//    head->next->next->next->next = createNode(2);
+//
+//    head = insertionSort(head);
 
-    head = insertionSort(head);
+    head = sortedInsert(createNode(2), head);
+    head = sortedInsert(createNode(9), head);
+    head = sortedInsert(createNode(2), head);
 
     printList(head);
 

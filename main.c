@@ -20,15 +20,26 @@ typedef struct node {
     struct node *parent;
 } Node;
 
+typedef struct noOrd {
+    Node *no;
+    struct noOrd *next;
+}noOrdenado;
+
 void gerar(int *lista);
 void print(int matriz[3][3]);
 void sucessora(int movimento, int *i, int *j, int matriz[3][3]);
+void menu_IA(int *escolha);
+void menu_inicial(int *escolha);
+
 void sucessoraIa(Node *current, int i_moves,int *zeroX, int *zeroY, int *newX, int *newY);
 int avalia(int m_comparar[3][3]);
 int heuristica(int atual[3][3]);
 Node *criaNo(int puzzle[3][3], int g, int h, Node *parent);
-int visitado(Node* lista[], int count, int puzzle[3][3]);
+int visitado(Node* atual, int puzzle[3][3]);
 void imprimePilha (Pilha* p);
+void aStar(int start[3][3]);
+noOrdenado *sortedInsert(Node *addNo, noOrdenado *sorted);
+
 
 int main(){
     int jogar = 1;
@@ -196,23 +207,23 @@ void sucessora(int movimento, int *i, int *j, int matriz[3][3]){// adicionar mat
     matriz[aux_i][aux_j] = aux_valor; //definindo a posi��o antiga do vazio com o novo valor
 }
 
-void sucessoraIa(Node *current, int i_moves,int *zeroX, int *zeroY, int *newX, int *newY){
-
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (current->puzzle[i][j] == 0) {
-                    *zeroX = i;
-                    *zeroY = j;
-                }
-            }
-        }
-
-         int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Movimentos possíveis (cima, baixo, esquerda, direita)
-            if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) {
-                *newX = *zeroX + moves[i_moves][0];
-                *newY = *zeroY + moves[i_moves][1];
-            }
-}
+//void sucessoraIa(Node *current, int i_moves,int *zeroX, int *zeroY, int *newX, int *newY){
+//
+//        for (int i = 0; i < 3; i++) {
+//            for (int j = 0; j < 3; j++) {
+//                if (current->puzzle[i][j] == 0) {
+//                    *zeroX = i;
+//                    *zeroY = j;
+//                }
+//            }
+//        }
+//
+//         int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Movimentos possíveis (cima, baixo, esquerda, direita)
+//            if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) {
+//                *newX = *zeroX + moves[i_moves][0];
+//                *newY = *zeroY + moves[i_moves][1];
+//            }
+//}
 
 int avalia(int m_comparar[3][3]){
     int v_procurado[3][3] = {{1,2,3},{4,5,6},{7,8,0}}, sum = 0; // usar soma pra verificar quantos numeros est�o em uma posi��o correta
@@ -320,84 +331,87 @@ Node* criaNo(int puzzle[3][3], int g, int h, Node* parent) {
     return novoNo;
 }
 
-int visitado(Node* lista[], int count, int puzzle[3][3]) {
-    for (int i = 0; i < count; i++) {
-        if (memcmp(lista[i]->puzzle, puzzle, sizeof(lista[i]->puzzle)) == 0) {
+int visitado(Node* atual, int puzzle[3][3]) {
+    while (atual != NULL) {
+        if (memcmp(atual->puzzle, puzzle, sizeof(atual->puzzle)) == 0) {
             return 1;
         }
+        atual = atual->parent;
     }
     return 0;
 }
+
 
 void imprimePilha (Pilha* p){
     No* q;
     for (q=p->Topo; q!=NULL; q=q->prox){
         print(q->puzzle);
+        printf("\t\n\nPressione qualquer tecla para continuar...\n");
+        getch();
+        system("cls");
     }
-};
+}
+
+noOrdenado *sortedInsert(Node *addNo, noOrdenado *sorted) {
+    noOrdenado *createNode = NULL;
+    createNode->no = addNo;
+    createNode->next = NULL;
+    // Special case for the head end
+    if (sorted == NULL || sorted->no->f >= createNode->no->f) {
+        createNode->next = sorted;
+        sorted = createNode;
+    }
+    else {
+        noOrdenado* curr = sorted;
+
+        // Locate the node before the point of insertion
+        while (curr->next != NULL && curr->next->no->f < createNode->no->f) {
+            curr = curr->next;
+        }
+        createNode->next = curr->next;
+        curr->next = createNode;
+    }
+
+    return sorted;
+}
 
 
 // Função principal A*
 void aStar(int start[3][3]) {
     int objetivo[3][3] = {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}};
-    Node* openList[1000];
-    Node* closedList[1000];
-    int openCount = 0, closedCount = 0;
-
     Node* inicioNo = criaNo(start, 0, heuristica(start), NULL);
-    openList[openCount++] = inicioNo;
 
-    int movimentos[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    noOrdenado *head = NULL;
+    head->no = inicioNo;
+    head->next = NULL;
+
+    Node *atual = head->no;
 
     while (openCount > 0) {
-        // Encontrar o nó com menor f
-        int minIndex = 0;
-        for (int i = 1; i < openCount; i++) {
-            if (openList[i]->f < openList[minIndex]->f) {
-                minIndex = i;
-            }
-        }
-        Node* atual = openList[minIndex];
-
         // Verificar se o estado atual é o estado objetivo
         if (memcmp(atual->puzzle, objetivo, sizeof(atual->puzzle)) == 0) {
             printf("Solução encontrada!\n");
 
             // Passo 1: Armazena os estados na ordem inversa (usando uma pilha)
-            Node* pilha[1000]; // Um vetor para simular uma pilha
-            int topo = 0;
+            Pilha *p = CriaPilha();
 
             while (atual != NULL) {
-                pilha[topo++] = atual; // Adiciona o nó atual à pilha
+                push(p, atual->puzzle); // Adiciona o nó atual à pilha
                 atual = atual->parent; // Move para o nó pai
             }
 
-            // Passo 2: Exibe os estados na ordem correta (desempilha e exibe)
-            for (int i = topo - 1; i >= 0; i--) {
-                system("cls"); // Limpa a tela
-                printf("Estado atual:\n");
-                for (int j = 0; j < 3; j++) {
-                    for (int k = 0; k < 3; k++) {
-                        if (pilha[i]->puzzle[j][k] == 0) {
-                            printf("\t_\t"); // Espaço vazio
-                        } else {
-                            printf("\t%d\t", pilha[i]->puzzle[j][k]);
-                        }
-                    }
-                    printf("\n\n");
-                }
-                printf("\nPressione qualquer tecla para continuar...\n");
-                getch(); // Aguarda o usuário pressionar uma tecla
-            }
+            // Passo 2: Exibe os estados na ordem correta
+            imprimePilha(p);
+            libera(p);
             return;
         }
 
-        // Mover o nó atual para a lista fechada
-        closedList[closedCount++] = atual;
-        for (int i = minIndex; i < openCount - 1; i++) {
-            openList[i] = openList[i + 1];
-        }
-        openCount--;
+//        // Mover o nó atual para a lista fechada
+//        closedList[closedCount++] = atual;
+//        for (int i = minIndex; i < openCount - 1; i++) {
+//            openList[i] = openList[i + 1];
+//        }
+//        openCount--;
 
         // Encontrar a posição do zero
         int zeroX, zeroY;
@@ -409,7 +423,7 @@ void aStar(int start[3][3]) {
                 }
             }
         }
-
+        int movimentos[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
         // Gerar estados sucessores
         for (int i = 0; i < 4; i++) {
             int newX = zeroX + movimentos[i][0];
@@ -421,10 +435,9 @@ void aStar(int start[3][3]) {
                 novoPuzzle[zeroX][zeroY] = novoPuzzle[newX][newY];
                 novoPuzzle[newX][newY] = 0;
 
-                if (!visitado(closedList, closedCount, novoPuzzle) &&
-                    !visitado(openList, openCount, novoPuzzle)) {
+                if (!visitado(atual, novoPuzzle)) {
                     Node* novoNo = criaNo(novoPuzzle, atual->g + 1, heuristica(novoPuzzle), atual);
-                    openList[openCount++] = novoNo;
+                    head = sortedInsert(novoNo, head);
                 }
             }
         }
@@ -432,60 +445,3 @@ void aStar(int start[3][3]) {
 
     printf("Nenhuma solução encontrada.\n");
 }
-
-//// Verificar se o objetivo foi alcançado
-//        if (memcmp(atual->puzzle, objetivo, sizeof(atual->puzzle)) == 0) {
-//            printf("Solução encontrada!\n");
-//
-//            // Passo 1: Armazena os estados na ordem inversa (usando uma pilha)
-//            Pilha *P=NULL;
-//            P = CriaPilha(); // Criando pilha
-//            int contTopo = 0;
-//
-//            while (atual != NULL) {
-//                push(P,atual); // Adiciona o nó atual à pilha
-//                atual = atual->parent; // Move para o nó pai
-//            }
-//
-//            // Passo 2: Exibe os estados na ordem correta (desempilha e exibe)
-//            while (!vaziaPilha(P)) {
-//                system("cls"); // Limpa a tela
-//                printf("Estado atual:\n");
-//                imprimePilha(P);
-//                pop(P);
-//                printf("\n\n");
-//            }
-
-
-//void pop(Pilha* p) {
-//    if (p == NULL || p->Topo == NULL) {
-//        exit(1); // Aborta o programa em caso de pilha vazia
-//    }
-////    memcpy(removedPuzzle, p->Topo->puzzle, sizeof(p->Topo->puzzle));
-//    p->Topo = ret_ini(p->Topo);
-//}
-//
-//
-//Pilha * libera (Pilha* p)
-//{
-//    No *q = p->Topo;
-//    while (q!=NULL)
-//    {
-//        No* t = q->prox;
-//        free(q);
-//        q = t;
-//    }
-//    free(p);
-//    return(NULL);
-//};
-//
-//int vaziaPilha(Pilha *p)
-//{
-//    if (p->Topo==NULL)
-//    {
-//        return 1; //pilha vazia
-//    }
-//    return 0;
-//}
-
-// Função principal do algoritmo A*
