@@ -119,8 +119,8 @@ int main(){
             }
             if(escolhaIA == 1){
                 //A*
-                int teste[3][3] = {{0,5,2}, {1,4,3}, {7,8,6}};
-                aStar(teste);
+//                int teste[3][3] = {{0,5,2}, {1,4,3}, {7,8,6}};
+                aStar(m);
             }
             else if(escolhaIA ==2){
                 //DFS iterativa
@@ -223,23 +223,23 @@ void sucessora(int movimento, int *i, int *j, int matriz[3][3]){// adicionar mat
     matriz[aux_i][aux_j] = aux_valor; //definindo a posi��o antiga do vazio com o novo valor
 }
 
-void sucessoraIa(Node *current, int i_moves,int *zeroX, int *zeroY, int *newX, int *newY){
-
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (current->puzzle[i][j] == 0) {
-                    *zeroX = i;
-                    *zeroY = j;
-                }
-            }
-        }
-
-         int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Movimentos possíveis (cima, baixo, esquerda, direita)
-            if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) {
-                *newX = *zeroX + moves[i_moves][0];
-                *newY = *zeroY + moves[i_moves][1];
-            }
-}
+//void sucessoraIa(Node *current, int i_moves,int *zeroX, int *zeroY, int *newX, int *newY){
+//
+//        for (int i = 0; i < 3; i++) {
+//            for (int j = 0; j < 3; j++) {
+//                if (current->puzzle[i][j] == 0) {
+//                    *zeroX = i;
+//                    *zeroY = j;
+//                }
+//            }
+//        }
+//
+//         int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Movimentos possíveis (cima, baixo, esquerda, direita)
+//            if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) {
+//                *newX = *zeroX + moves[i_moves][0];
+//                *newY = *zeroY + moves[i_moves][1];
+//            }
+//}
 
 int avalia(int m_comparar[3][3]){
     int v_procurado[3][3] = {{1,2,3},{4,5,6},{7,8,0}}, sum = 0; // usar soma pra verificar quantos numeros est�o em uma posi��o correta
