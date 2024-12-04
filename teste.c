@@ -1,149 +1,191 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
+#include <string.h>
 
-#define N 3 // Tamanho do tabuleiro (3x3)
-#define PROFUNDIDADE_MAX 15 // Limite máximo de profundidade
+#define HASH_SIZE 1000000
+#define PROFUNDIDADE_MAXIMA 31
 
-// Estrutura para armazenar o estado do tabuleiro
 typedef struct {
-    int tabuleiro[N][N];
+    int tabuleiro[3][3];
     int profundidade;
     int pos_vazio_i;
     int pos_vazio_j;
 } Estado;
 
-// Funções auxiliares
-void printTabuleiro(int tabuleiro[N][N]);
-bool compararTabuleiros(int tabuleiro1[N][N], int tabuleiro2[N][N]);
-bool estadoFinal(int tabuleiro[N][N]);
-void moverEspacoVazio(int* i, int* j, int movimento);
-bool movimentoValido(int i, int j);
-void copiarTabuleiro(int destino[N][N], int origem[N][N]);
+typedef struct No {
+    Estado estado;
+    struct No* proximo;
+} No;
 
-// Função DFS Iterativa
-bool dfsIterativa(Estado inicial);
+typedef struct {
+    No* topo;
+} Pilha;
 
-// Função principal
-int main() {
-    Estado inicial = {
-        .tabuleiro = {{1, 2, 7}, {6, 4, 8}, {0, 3, 5}}, // Tabuleiro inicial
-        .profundidade = 0,
-        .pos_vazio_i = 2, // Posição do vazio (0)
-        .pos_vazio_j = 2
+void inicializarPilha(Pilha* p) {
+    p->topo = NULL;
+}
+
+void empilhar(Pilha* p, Estado estado) {
+    No* novo = (No*)malloc(sizeof(No));
+    novo->estado = estado;
+    novo->proximo = p->topo;
+    p->topo = novo;
+}
+
+Estado desempilhar(Pilha* p) {
+    if (p->topo == NULL) {
+        Estado vazio = {{0}};
+        return vazio;
+    }
+    Estado estado = p->topo->estado;
+    No* temp = p->topo;
+    p->topo = p->topo->proximo;
+    free(temp);
+    return estado;
+}
+
+int pilhaVazia(Pilha* p) {
+    return p->topo == NULL;
+}
+
+int movimentoValido(int i, int j) {
+    return i >= 0 && i < 3 && j >= 0 && j < 3;
+}
+
+// Função para verificar se chegou ao estado objetivo
+int avalia(int tabuleiro[3][3]) {
+    int objetivo[3][3] = {
+        {1, 2, 3},
+        {4, 5, 6},
+        {7, 8, 0}
     };
 
-    if (dfsIterativa(inicial)) {
-        printf("Solução encontrada!\n");
-    } else {
-        printf("Não foi possível encontrar uma solução.\n");
-    }
-
-    return 0;
-}
-
-// Função para imprimir o tabuleiro
-void printTabuleiro(int tabuleiro[N][N]) {
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            if (tabuleiro[i][j] == 0) {
-                printf(" _ ");
-            } else {
-                printf(" %d ", tabuleiro[i][j]);
+    for(int i = 0; i < 3; i++) {
+        for(int j = 0; j < 3; j++) {
+            if(tabuleiro[i][j] != objetivo[i][j]) {
+                return 0;
             }
         }
+    }
+    return 1;
+}
+
+void print(int matriz[3][3]) {
+    for(int i = 0; i < 3; i++) {
         printf("\n");
-    }
-}
-
-// Função para comparar dois tabuleiros
-bool compararTabuleiros(int tabuleiro1[N][N], int tabuleiro2[N][N]) {
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            if (tabuleiro1[i][j] != tabuleiro2[i][j]) {
-                return false;
-            }
+        for(int j = 0; j < 3; j++) {
+            if(matriz[i][j] == 0)
+                printf(" _ ");
+            else
+                printf(" %d ", matriz[i][j]);
         }
     }
-    return true;
+    printf("\n");
 }
 
-// Função para verificar se o tabuleiro está no estado final
-bool estadoFinal(int tabuleiro[N][N]) {
-    int objetivo[N][N] = {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}};
-    return compararTabuleiros(tabuleiro, objetivo);
-}
-
-// Função para mover o espaço vazio no tabuleiro
-void moverEspacoVazio(int* i, int* j, int movimento) {
-    int movimentos[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Up, Down, Left, Right
-    *i += movimentos[movimento][0];
-    *j += movimentos[movimento][1];
-}
-
-// Função para verificar se o movimento é válido
-bool movimentoValido(int i, int j) {
-    return i >= 0 && i < N && j >= 0 && j < N;
-}
-
-// Função para copiar o tabuleiro de um estado para outro
-void copiarTabuleiro(int destino[N][N], int origem[N][N]) {
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            destino[i][j] = origem[i][j];
+int hash_estado(int tabuleiro[3][3]) {
+    int hash = 0;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            hash = hash * 10 + tabuleiro[i][j];
         }
     }
+    return hash;
 }
 
-// Função DFS Iterativa
-bool dfsIterativa(Estado inicial) {
-    Estado pilha[PROFUNDIDADE_MAX];
-    int topo = -1;
+int BuscaProfundidadeIterativa(Estado inicial) {
+    int movimentos[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    char* direcoes[4] = {"CIMA", "BAIXO", "ESQUERDA", "DIREITA"};
 
-    for (int limite = 0; limite < PROFUNDIDADE_MAX; limite++) {
-        pilha[++topo] = inicial;
+    for (int limite = 0; limite <= PROFUNDIDADE_MAXIMA; limite++) {
+        printf("\n=== Iniciando busca com profundidade %d ===\n", limite);
 
-        while (topo >= 0) {
-            Estado atual = pilha[topo--];
+        int* estados_visitados = (int*)calloc(HASH_SIZE, sizeof(int));
+        if (!estados_visitados) {
+            printf("Erro de alocação de memória!\n");
+            return -1;
+        }
 
-            // Verifica se encontrou a solução
-            if (estadoFinal(atual.tabuleiro)) {
-                printTabuleiro(atual.tabuleiro);
-                return true;
+        Pilha pilha;
+        inicializarPilha(&pilha);
+        empilhar(&pilha, inicial);
+
+        int movimentos_explorados = 0;
+
+        while (!pilhaVazia(&pilha)) {
+            Estado atual = desempilhar(&pilha);
+            movimentos_explorados++;
+
+            printf("\nEstado atual (Prof: %d):\n", atual.profundidade);
+            print(atual.tabuleiro);
+
+            if (avalia(atual.tabuleiro)) {
+                printf("\nSolução encontrada!\n");
+                printf("Profundidade: %d\n", atual.profundidade);
+                printf("Estados explorados: %d\n", movimentos_explorados);
+                free(estados_visitados);
+                return 1;
             }
 
             if (atual.profundidade < limite) {
-                int movimentos[4] = {0, 1, 2, 3}; // Up, Down, Left, Right
+                for (int m = 3; m >= 0; m--) {
+                    int novo_i = atual.pos_vazio_i + movimentos[m][0];
+                    int novo_j = atual.pos_vazio_j + movimentos[m][1];
 
-                for (int i = 0; i < 4; i++) {
-                    int nova_i = atual.pos_vazio_i;
-                    int nova_j = atual.pos_vazio_j;
+                    if (movimentoValido(novo_i, novo_j)) {
+                        Estado novo = atual;
+                        novo.profundidade++;
 
-                    // Copia o tabuleiro para o novo estado
-                    Estado novoEstado;
-                    copiarTabuleiro(novoEstado.tabuleiro, atual.tabuleiro);
+                        // Realiza o movimento
+                        novo.tabuleiro[atual.pos_vazio_i][atual.pos_vazio_j] =
+                            novo.tabuleiro[novo_i][novo_j];
+                        novo.tabuleiro[novo_i][novo_j] = 0;
+                        novo.pos_vazio_i = novo_i;
+                        novo.pos_vazio_j = novo_j;
 
-                    moverEspacoVazio(&nova_i, &nova_j, movimentos[i]);
+                        int hash = hash_estado(novo.tabuleiro) % HASH_SIZE;
+                        if (!estados_visitados[hash]) {
+                            estados_visitados[hash] = 1;
+                            empilhar(&pilha, novo);
 
-                    // Verifica se o movimento é válido
-                    if (movimentoValido(nova_i, nova_j)) {
-                        // Troca a posição do vazio com o número correspondente
-                        novoEstado.tabuleiro[atual.pos_vazio_i][atual.pos_vazio_j] = novoEstado.tabuleiro[nova_i][nova_j];
-                        novoEstado.tabuleiro[nova_i][nova_j] = 0;
-
-                        novoEstado.pos_vazio_i = nova_i;
-                        novoEstado.pos_vazio_j = nova_j;
-                        novoEstado.profundidade = atual.profundidade + 1;
-
-                        pilha[++topo] = novoEstado;
-                        printTabuleiro(novoEstado.tabuleiro);
-                        system("pause");
-                        system("cls");
+                            printf("Movimento: %s\n", direcoes[m]);
+                            print(novo.tabuleiro);
+                        }
                     }
                 }
             }
         }
+
+        free(estados_visitados);
+        printf("\nNão encontrou solução na profundidade %d\n", limite);
+    }
+    return 0;
+}
+
+int main() {
+    Estado inicial = {
+        .tabuleiro = {
+            {1, 2, 3},
+            {4, 0, 5},
+            {7, 8, 6}
+        },
+        .profundidade = 0,
+        .pos_vazio_i = 1,
+        .pos_vazio_j = 1
+    };
+
+    printf("Estado inicial:\n");
+    print(inicial.tabuleiro);
+
+    int resultado = BuscaProfundidadeIterativa(inicial);
+
+    if (resultado == 1) {
+        printf("\nBusca concluída com sucesso!\n");
+    } else if (resultado == 0) {
+        printf("\nNão foi possível encontrar uma solução.\n");
+    } else {
+        printf("\nErro durante a busca.\n");
     }
 
-    return false; // Caso não encontre a solução dentro do limite de profundidade
+    return 0;
 }
