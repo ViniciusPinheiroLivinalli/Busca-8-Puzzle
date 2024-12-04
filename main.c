@@ -61,12 +61,11 @@ void sucessora(int movimento, int *i, int *j, int matriz[3][3]);
 void menu_IA(int *escolha);
 void menu_inicial(int *escolha);
 
-void sucessoraIa(Node *current, int i_moves,int *zeroX, int *zeroY, int *newX, int *newY);
 int avalia(int m_comparar[3][3]);
 int heuristica(int atual[3][3]);
 Node *criaNo(int puzzle[3][3], int g, int h, Node *parent);
 int visitado(Node* atual, int puzzle[3][3]);
-void imprimePilha (Pilha* p);
+void imprimePilha (PilhaA* p);
 void aStar(int start[3][3]);
 
 noOrdenado *sortedInsert(Node *addNo, noOrdenado *sorted);
@@ -419,8 +418,8 @@ int visitado(Node* atual, int puzzle[3][3]) {
 }
 
 
-void imprimePilha (Pilha* p){
-    No* q;
+void imprimePilha (PilhaA* p){
+    NoA* q;
     for (q=p->Topo; q!=NULL; q=q->prox){
         print(q->puzzle);
         printf("\t\n\nPressione qualquer tecla para continuar...\n");
@@ -554,7 +553,7 @@ void aStar(int start[3][3]) {
             printf("Solução encontrada!\n");
 
             // Passo 1: Armazena os estados na ordem inversa (usando uma pilha)
-            Pilha *p = CriaPilha();
+            PilhaA *p = CriaPilhaA();
 
             while (atual != NULL) {
                 push(p, atual->puzzle); // Adiciona o nó atual à pilha
@@ -563,7 +562,7 @@ void aStar(int start[3][3]) {
 
             // Passo 2: Exibe os estados na ordem correta
             imprimePilha(p);
-            libera(p);
+            liberaA(p);
             freeHashSet(visitedStates);
             return;
         }
