@@ -48,7 +48,10 @@ Node *criaNo(int puzzle[3][3], int g, int h, Node *parent);
 int visitado(Node* atual, int puzzle[3][3]);
 void imprimePilha (Pilha* p);
 void aStar(int start[3][3]);
+
 noOrdenado *sortedInsert(Node *addNo, noOrdenado *sorted);
+noOrdenado *criaSortedList(Node* inicioNo);
+noOrdenado *liberaNo(noOrdenado *head);
 
 HashSet* createHashSet();
 unsigned int computeHash(int puzzle[3][3]);
@@ -391,6 +394,20 @@ noOrdenado *sortedInsert(Node *addNo, noOrdenado *sorted) {
     return sorted;
 }
 
+noOrdenado *criaSortedList(Node* inicioNo){
+    noOrdenado *head = (noOrdenado*)malloc(sizeof(noOrdenado));
+    head->no = inicioNo;
+    head->next = NULL;
+
+    return head;
+}
+
+noOrdenado *liberaNo(noOrdenado *head){
+    noOrdenado *aux = head->next;
+    free(head);
+    return head = aux;
+}
+
 // Funções para o hashset
 
 HashSet* createHashSet() {
@@ -468,10 +485,7 @@ void freeHashSet(HashSet* table) {
 // Função principal A*
 void aStar(int start[3][3]) {
     Node* inicioNo = criaNo(start, 0, heuristica(start), NULL);
-    noOrdenado *head = (noOrdenado*)malloc(sizeof(noOrdenado));
-    head->no = inicioNo;
-    head->next = NULL;
-
+    noOrdenado *head = criaSortedList(inicioNo);
     HashSet* visitedStates = createHashSet();
 
     while (head != NULL) {
@@ -496,9 +510,7 @@ void aStar(int start[3][3]) {
             return;
         }
         //Remove o nó atual
-        noOrdenado *aux = head->next;
-        free(head);
-        head = aux;
+        head = liberaNo(head);
         // Inserir estado atual no hashset
         insertHash(visitedStates, computeHash(atual->puzzle));
 
