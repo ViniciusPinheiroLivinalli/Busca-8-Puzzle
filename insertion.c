@@ -31,7 +31,7 @@ noOrdenado *sortedInsert(noOrdenado *createNode, noOrdenado *sorted) {
         while (curr->next != NULL && curr->next->no->f < createNode->no->f) {
             curr = curr->next;
         }
-        createNode->next = curr->nex 211 1t;
+        createNode->next = curr->next;
         curr->next = createNode;
     }
 
@@ -63,7 +63,7 @@ noOrdenado* insertionSort(noOrdenado* head) {
 
 void printList(noOrdenado* curr) {
     while (curr != NULL) {
-        printf(" %d", curr->no->f);
+        printf("\t %d", curr->no->f);
         curr = curr->next;
     }
 }
@@ -92,7 +92,13 @@ int main() {
     head = sortedInsert(createNode(9), head);
     head = sortedInsert(createNode(2), head);
 
-    printList(head);
+    while(head != NULL){
+        printList(head);
+        printf("\n");
+        noOrdenado *aux = head->next;
+        free(head);
+        head = aux;
+    }
 
     return 0;
 }

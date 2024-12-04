@@ -119,8 +119,8 @@ int main(){
             }
             if(escolhaIA == 1){
                 //A*
-
-                aStar(m);
+                int teste[3][3] = {{0,5,2}, {1,4,3}, {7,8,6}};
+                aStar(teste);
             }
             else if(escolhaIA ==2){
                 //DFS iterativa
@@ -223,23 +223,23 @@ void sucessora(int movimento, int *i, int *j, int matriz[3][3]){// adicionar mat
     matriz[aux_i][aux_j] = aux_valor; //definindo a posi��o antiga do vazio com o novo valor
 }
 
-//void sucessoraIa(Node *current, int i_moves,int *zeroX, int *zeroY, int *newX, int *newY){
-//
-//        for (int i = 0; i < 3; i++) {
-//            for (int j = 0; j < 3; j++) {
-//                if (current->puzzle[i][j] == 0) {
-//                    *zeroX = i;
-//                    *zeroY = j;
-//                }
-//            }
-//        }
-//
-//         int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Movimentos possíveis (cima, baixo, esquerda, direita)
-//            if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) {
-//                *newX = *zeroX + moves[i_moves][0];
-//                *newY = *zeroY + moves[i_moves][1];
-//            }
-//}
+void sucessoraIa(Node *current, int i_moves,int *zeroX, int *zeroY, int *newX, int *newY){
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (current->puzzle[i][j] == 0) {
+                    *zeroX = i;
+                    *zeroY = j;
+                }
+            }
+        }
+
+         int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Movimentos possíveis (cima, baixo, esquerda, direita)
+            if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) {
+                *newX = *zeroX + moves[i_moves][0];
+                *newY = *zeroY + moves[i_moves][1];
+            }
+}
 
 int avalia(int m_comparar[3][3]){
     int v_procurado[3][3] = {{1,2,3},{4,5,6},{7,8,0}}, sum = 0; // usar soma pra verificar quantos numeros est�o em uma posi��o correta
@@ -369,7 +369,7 @@ void imprimePilha (Pilha* p){
 }
 
 noOrdenado *sortedInsert(Node *addNo, noOrdenado *sorted) {
-    noOrdenado *createNode = NULL;
+    noOrdenado *createNode = (noOrdenado*)malloc(sizeof(noOrdenado));;
     createNode->no = addNo;
     createNode->next = NULL;
     // Special case for the head end
@@ -468,15 +468,15 @@ void freeHashSet(HashSet* table) {
 // Função principal A*
 void aStar(int start[3][3]) {
     Node* inicioNo = criaNo(start, 0, heuristica(start), NULL);
-    noOrdenado *head = NULL;
+    noOrdenado *head = (noOrdenado*)malloc(sizeof(noOrdenado));
     head->no = inicioNo;
     head->next = NULL;
 
     HashSet* visitedStates = createHashSet();
 
-    while (head->next != NULL) {
-        int objetivo[3][3] = {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}};
+    while (head != NULL) {
         Node *atual = head->no;
+        int objetivo[3][3] = {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}};
         // Verificar se o estado atual é o estado objetivo
         if (memcmp(atual->puzzle, objetivo, sizeof(atual->puzzle)) == 0) {
             printf("Solução encontrada!\n");
@@ -496,7 +496,9 @@ void aStar(int start[3][3]) {
             return;
         }
         //Remove o nó atual
-        head = head->next;
+        noOrdenado *aux = head->next;
+        free(head);
+        head = aux;
         // Inserir estado atual no hashset
         insertHash(visitedStates, computeHash(atual->puzzle));
 
@@ -522,7 +524,7 @@ void aStar(int start[3][3]) {
                 novoPuzzle[zeroX][zeroY] = novoPuzzle[newX][newY];
                 novoPuzzle[newX][newY] = 0;
 
-                if (!containsHash(visitedStates, novoPuzzle)) {
+                if (!containsHash(visitedStates, computeHash(novoPuzzle))) {
                     Node* novoNo = criaNo(novoPuzzle, atual->g + 1, heuristica(novoPuzzle), atual);
                     head = sortedInsert(novoNo, head);
                 }
@@ -532,3 +534,5 @@ void aStar(int start[3][3]) {
 
     printf("Nenhuma solução encontrada.\n");
 }
+
+
